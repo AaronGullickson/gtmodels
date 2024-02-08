@@ -24,8 +24,14 @@ extract_pvalue <- function(model) {
   summary(model)$coef[,4]
 }
 
-gt_model <- function(models,
-                     digits=3) {
+transpose_tibble <- function(x) {
+  x |>
+    t() |>
+    as.data.frame() |>
+    as_tibble()
+}
+
+gt_model <- function(models, digits=3) {
 
   # extract coefficients
   tbl_coef <- models |>
@@ -36,6 +42,12 @@ gt_model <- function(models,
   tbl_se <- models |>
     map(extract_se) |>
     bind_rows()
+
+  # extract pvalues
+  tbl_p <- models |>
+    map(extract_pvalue) |>
+    bind_rows() |>
+    transpose_tibble()
 
   # extract summary statistics
   tbl_summary <- models |>
@@ -49,15 +61,11 @@ gt_model <- function(models,
 
   # transpose both tables and convert back to tibbles
   tbl_coef <- tbl_coef |>
-    t() |>
-    as.data.frame() |>
-    as_tibble() |>
+    transpose_tibble() |>
     mutate(type="coef", variable=var_names)
 
   tbl_se <- tbl_se |>
-    t() |>
-    as.data.frame() |>
-    as_tibble() |>
+    transpose_tibble() |>
     mutate(type="se", variable=var_names)
 
   tbl_combined <- bind_rows(tbl_coef, tbl_se) |>
@@ -66,9 +74,7 @@ gt_model <- function(models,
     select(variable, everything())
 
   tbl_summary <- tbl_summary |>
-    t() |>
-    as.data.frame() |>
-    as_tibble() |>
+    transpose_tibble() |>
     mutate(variable=summary_names) |>
     select(variable, everything())
 
