@@ -10,16 +10,31 @@ models <- list(model1, model2, model3)
 
 digits <- 3
 
+extract_summary <- function(model) {
+  n <- length(model1$fitted.values)
+  r.squared <- summary(model)$r.squared
+  return(c("n" = n, "r.squared"=r.squared))
+}
+
 construct_table <- function(models) {
 
-  tbl <- models |>
+  # extract coefficients
+  tbl_coef <- models |>
     map(coef) |>
-    bind_rows() |>
-    t()
+    bind_rows()
 
-  # now convert back to a tibble
-  var_names <- rownames(tbl)
+  # extract summary statistics
+  tbl_summary <- models |>
+    map(extract_summary) |>
+    bind_rows()
+
+  # combine
+  tbl <- bind_cols(tbl_coef, tbl_summary)
+
+  # transpose the table and get it back in tibble form
+  var_names <- colnames(tbl)
   tbl <- tbl |>
+    t() |>
     as.data.frame() |>
     as_tibble()
 
@@ -31,10 +46,9 @@ construct_table <- function(models) {
 
 tbl <- construct_table(list(model1, model2, model3))
 
-
-
 tbl |>
   gt(rowname_col = "variables") |>
   cols_label_with(starts_with("model"), fn = ~ gsub("model", "Model ", .)) |>
   fmt_number(starts_with("model"), decimals = digits) |>
+  fmt_number(starts_with("model"), rows = matches("n"), decimals = 0) |>
   sub_missing(missing_text = "")
