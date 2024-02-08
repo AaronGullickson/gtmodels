@@ -43,7 +43,8 @@ gt_model <- function(models,
     bind_rows()
 
   # get variable names for later
-  var_names <- colnames(tbl_coef)
+  var_names <- factor(colnames(tbl_coef),
+                      levels=colnames(tbl_coef))
   summary_names <- colnames(tbl_summary)
 
   # transpose both tables and convert back to tibbles
