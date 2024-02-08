@@ -16,6 +16,14 @@ extract_summary <- function(model) {
   return(c("N" = n, "$$R^2$$"=r.squared))
 }
 
+extract_se <- function(model) {
+  summary(model)$coef[,2]
+}
+
+extract_pvalue <- function(model) {
+  summary(model)$coef[,4]
+}
+
 construct_table <- function(models) {
 
   # extract coefficients
@@ -52,4 +60,5 @@ tbl |>
   cols_label_with(starts_with("model"), fn = ~ gsub("model", "Model ", .)) |>
   fmt_number(starts_with("model"), rows=starts_with("var"), decimals = digits) |>
   fmt_number(starts_with("model"), rows = matches("n$"), decimals = 0, use_seps=TRUE) |>
+  fmt_number(starts_with("model"), rows = matches("R\\^2"), decimals = 3) |>
   sub_missing(missing_text = "")
