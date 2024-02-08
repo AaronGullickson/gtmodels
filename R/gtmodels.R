@@ -8,8 +8,9 @@ model3 <- update(model2, .~.+sex)
 
 models <- list(model1, model2, model3)
 
+digits <- 3
 
-construct_model_table <- function(models, digits=3) {
+construct_table <- function(models) {
 
   tbl <- models |>
     map(coef) |>
@@ -24,11 +25,16 @@ construct_model_table <- function(models, digits=3) {
 
   tbl <- bind_cols(variables=var_names, tbl) |>
     rename_with(~gsub("V", "model", .x))
+
+  return(tbl)
 }
 
+tbl <- construct_table(list(model1, model2, model3))
+
+
+
 tbl |>
-  gt() |>
-  cols_label(variables = "Variables") |>
+  gt(rowname_col = "variables") |>
   cols_label_with(starts_with("model"), fn = ~ gsub("model", "Model ", .)) |>
   fmt_number(starts_with("model"), decimals = digits) |>
   sub_missing(missing_text = "")
