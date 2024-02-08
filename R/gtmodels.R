@@ -24,7 +24,8 @@ extract_pvalue <- function(model) {
   summary(model)$coef[,4]
 }
 
-construct_table <- function(models) {
+gt_model <- function(models,
+                     digits=3) {
 
   # extract coefficients
   tbl_coef <- models |>
@@ -79,19 +80,19 @@ construct_table <- function(models) {
 
   var_indx <- seq(from=1, by=2, length.out=length(var_names))
   se_indx <- seq(from=2, by=2, length.out=length(var_names))
-  tbl$variable[var_indx] <- paste("var", tbl$variable[var_indx], sep="_")
-  tbl$variable[se_indx] <- paste("se", tbl$variable[se_indx], sep="_")
+  tbl$variable[se_indx] <- ""
 
-  return(tbl)
+  tbl |>
+    gt(rowname_col = "variable") |>
+    cols_label_with(starts_with("model"), fn = ~ gsub("model", "Model ", .)) |>
+    fmt_number(starts_with("model"), rows=var_indx, decimals = digits) |>
+    fmt_number(starts_with("model"), rows=se_indx, decimals = digits,
+               pattern="({x})") |>
+    fmt_number(starts_with("model"), rows = matches("N$"), decimals = 0,
+               use_seps=TRUE) |>
+    fmt_number(starts_with("model"), rows = matches("R\\^2"), decimals = 3) |>
+    sub_missing(missing_text = "")
+
 }
 
-tbl <- construct_table(list(model1, model2, model3))
-
-tbl |>
-  gt(rowname_col = "variable") |>
-  cols_label_with(starts_with("model"), fn = ~ gsub("model", "Model ", .)) |>
-  fmt_number(starts_with("model"), rows=starts_with("var"), decimals = digits) |>
-  fmt_number(starts_with("model"), rows=starts_with("se"), decimals = digits, pattern="({x})") |>
-  fmt_number(starts_with("model"), rows = matches("N$"), decimals = 0, use_seps=TRUE) |>
-  fmt_number(starts_with("model"), rows = matches("R\\^2"), decimals = 3) |>
-  sub_missing(missing_text = "")
+gt_model(models)
