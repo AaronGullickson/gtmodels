@@ -32,7 +32,8 @@ construct_table <- function(models) {
   tbl <- bind_cols(tbl_coef, tbl_summary)
 
   # transpose the table and get it back in tibble form
-  var_names <- colnames(tbl)
+  var_names <- c(paste("var_", colnames(tbl_coef), sep=""),
+                 paste("summary_", colnames(tbl_summary), sep=""))
   tbl <- tbl |>
     t() |>
     as.data.frame() |>
