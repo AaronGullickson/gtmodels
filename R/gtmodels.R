@@ -50,6 +50,6 @@ tbl <- construct_table(list(model1, model2, model3))
 tbl |>
   gt(rowname_col = "variables") |>
   cols_label_with(starts_with("model"), fn = ~ gsub("model", "Model ", .)) |>
-  fmt_number(starts_with("model"), decimals = digits) |>
-  fmt_number(starts_with("model"), rows = matches("n$"), decimals = 0) |>
+  fmt_number(starts_with("model"), rows=starts_with("var"), decimals = digits) |>
+  fmt_number(starts_with("model"), rows = matches("n$"), decimals = 0, use_seps=TRUE) |>
   sub_missing(missing_text = "")
