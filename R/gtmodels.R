@@ -13,7 +13,7 @@ digits <- 3
 extract_summary <- function(model) {
   n <- length(model1$fitted.values)
   r.squared <- summary(model)$r.squared
-  return(c("n" = n, "r.squared"=r.squared))
+  return(c("N" = n, "$$R^2$$"=r.squared))
 }
 
 construct_table <- function(models) {
@@ -50,5 +50,5 @@ tbl |>
   gt(rowname_col = "variables") |>
   cols_label_with(starts_with("model"), fn = ~ gsub("model", "Model ", .)) |>
   fmt_number(starts_with("model"), decimals = digits) |>
-  fmt_number(starts_with("model"), rows = matches("n"), decimals = 0) |>
+  fmt_number(starts_with("model"), rows = matches("n$"), decimals = 0) |>
   sub_missing(missing_text = "")
