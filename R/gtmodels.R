@@ -90,7 +90,6 @@ gt_model <- function(models,
 
   gt_tbl <- tbl |>
     gt(rowname_col = "variable") |>
-    cols_label_with(starts_with("model"), fn = ~ gsub("model", "Model ", .)) |>
     fmt_number(starts_with("model"), rows=var_indx, decimals = digits) |>
     fmt_number(starts_with("model"), rows=se_indx, decimals = digits,
                pattern="({x})") |>
@@ -133,13 +132,3 @@ gt_model <- function(models,
 
   return(gt_tbl)
 }
-
-gt_model(models, digits=3, var_labels=name_correspondence,
-         sig_thresh=c(0.05,0.01)) |>
-  tab_source_note("Note: Standard errors are shown in parenthesis.")
-
-
-modelb <- glm(sex ~ flipper_length_mm+body_mass_g, data=penguins, family=binomial)
-modela <- glm(sex ~ flipper_length_mm, data=penguins, family=binomial)
-
-gt_model(list(modela, modelb))
