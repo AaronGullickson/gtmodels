@@ -99,12 +99,13 @@ gt_model <- function(models,
       }
     }
 
-    for(i in 1:m) {
-      for(j in 1:length(sig_thresh)) {
+
+    for(i in 1:length(sig_thresh)) {
+      for(j in 1:m) {
         gt_tbl <- gt_tbl |>
-          tab_footnote(footnote = paste("p < ", sig_thresh[j], sep=""),
-                       locations = cells_body(columns=i+1,
-                                              rows=var_indx[which(thresholds[[j]][,i])]),
+          tab_footnote(footnote = paste("p < ", sig_thresh[i], sep=""),
+                       locations = cells_body(columns=j+1,
+                                              rows=var_indx[which(thresholds[[i]][,j])]),
                        placement = "right")
       }
     }
