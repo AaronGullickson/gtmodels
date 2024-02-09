@@ -73,10 +73,11 @@ gt_model <- function(models,
     fmt_number(starts_with("model"), decimals = digits) |>
     fmt_number(starts_with("model"), rows=se_indx, decimals = digits,
                pattern="({x})") |>
-    fmt_number(starts_with("model"), rows = tidyselect::matches("N$"), decimals = 0,
-               use_seps=TRUE) |>
+    fmt_number(starts_with("model"), rows = tidyselect::matches("N$"),
+               decimals = 0) |>
     sub_missing(missing_text = "") |>
-    opt_footnote_marks(marks = c("*","**","***"))
+    opt_footnote_marks(marks = c("*","**","***")) |>
+    tab_options(footnotes.multiline = FALSE, footnotes.sep=";")
 
   # add asterisks
   # FIXME: If a particular threshold is not present in the data it doesn't show
