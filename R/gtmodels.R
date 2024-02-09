@@ -67,11 +67,16 @@ gt_model <- function(models,
   # combine
   tbl <- bind_rows(tbl_combined, tbl_summary)
 
-  # change names for reference
+  # set indexes
+  var_indx <- seq(from=1, by=2, length.out=length(var_names))
+  se_indx <- seq(from=2, by=2, length.out=length(var_names))
+
+  # change names
   tbl <- tbl |>
     rename_with(~gsub("V", "model", .x))
 
-  # change intercept
+  tbl$variable[se_indx] <- ""
+
   tbl <- tbl |>
     mutate(variable = str_replace(variable, "\\(Intercept\\)", "Intercept"))
 
@@ -82,10 +87,6 @@ gt_model <- function(models,
                                       as.character(var_labels[vname])))
     }
   }
-
-  var_indx <- seq(from=1, by=2, length.out=length(var_names))
-  se_indx <- seq(from=2, by=2, length.out=length(var_names))
-  tbl$variable[se_indx] <- ""
 
   gt_tbl <- tbl |>
     gt(rowname_col = "variable") |>
