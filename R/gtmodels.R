@@ -1,6 +1,7 @@
 library(gt)
 library(tidyverse)
 library(palmerpenguins)
+library(stringr)
 
 model1 <- lm(bill_length_mm~flipper_length_mm, data=penguins)
 model2 <- update(model1, .~.+body_mass_g)
@@ -9,6 +10,10 @@ model3 <- update(model2, .~.+sex)
 models <- list(model1, model2, model3)
 
 digits <- 3
+
+name_correspondence <- list("flipper_length_mm"="Flipper length (mm)",
+                            "body_mass_g"="Body Mass (g)",
+                            "sexmale"="Male")
 
 extract_summary <- function(model) {
   n <- length(model1$fitted.values)
@@ -31,7 +36,7 @@ transpose_tibble <- function(x) {
     as_tibble()
 }
 
-gt_model <- function(models, digits=3) {
+gt_model <- function(models, digits=3, var_labels=NULL) {
 
   # extract coefficients
   tbl_coef <- models |>
@@ -80,6 +85,18 @@ gt_model <- function(models, digits=3) {
   tbl <- tbl |>
     rename_with(~gsub("V", "model", .x))
 
+  # change intercept
+  tbl <- tbl |>
+    mutate(variable = str_replace(variable, "\\(Intercept\\)", "Intercept"))
+
+  if(!is.null(var_labels)) {
+    for(vname in names(var_labels)) {
+      tbl <- tbl |>
+        mutate(variable = str_replace(variable, vname,
+                                      as.character(var_labels[vname])))
+    }
+  }
+
   var_indx <- seq(from=1, by=2, length.out=length(var_names))
   se_indx <- seq(from=2, by=2, length.out=length(var_names))
   tbl$variable[se_indx] <- ""
@@ -113,7 +130,7 @@ gt_model <- function(models, digits=3) {
       tab_footnote(footnote = "p < 0.05",
                    locations=cells_body(columns=i+1,
                                         rows=var_indx[which(p_thresh1[,i])]),
-                   placement = "right") #|>
+                   placement = "right")
       #tab_footnote(footnote = "p < 0.01",
       #             locations=cells_body(columns=i+1,
       #                                  rows=var_indx[which(p_thresh2[,i])]),
@@ -123,6 +140,10 @@ gt_model <- function(models, digits=3) {
       #                                  rows=var_indx[which(p_thresh3[,i])]),
       #             placement = "right")
   }
+
+  return(gt_tbl)
 }
 
-gt_model(models)
+gt_model(models, digits=3, var_labels=name_correspondence) |>
+  tab_source_note("Note: Standard errors are shown in parenthesis.")
+
