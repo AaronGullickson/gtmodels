@@ -43,12 +43,6 @@ gt_model <- function(models, digits=3) {
     map(extract_se) |>
     bind_rows()
 
-  # extract pvalues
-  tbl_p <- models |>
-    map(extract_pvalue) |>
-    bind_rows() |>
-    transpose_tibble()
-
   # extract summary statistics
   tbl_summary <- models |>
     map(extract_summary) |>
@@ -58,6 +52,7 @@ gt_model <- function(models, digits=3) {
   var_names <- factor(colnames(tbl_coef),
                       levels=colnames(tbl_coef))
   summary_names <- colnames(tbl_summary)
+  m <- nrow(tbl_coef)
 
   # transpose both tables and convert back to tibbles
   tbl_coef <- tbl_coef |>
@@ -89,7 +84,18 @@ gt_model <- function(models, digits=3) {
   se_indx <- seq(from=2, by=2, length.out=length(var_names))
   tbl$variable[se_indx] <- ""
 
-  tbl |>
+  # create pvalue matrix
+  tbl_p <- models |>
+    map(extract_pvalue) |>
+    bind_rows() |>
+    transpose_tibble()
+
+  # currently, multiple thresholds have some problems, so just use on threshold
+  p_thresh1 <- tbl_p<.05# & tbl_p>=.01
+  #p_thresh2 <- tbl_p<.01 & tbl_p>=.001
+  #p_thresh3 <- tbl_p<.001
+
+  gt_tbl <- tbl |>
     gt(rowname_col = "variable") |>
     cols_label_with(starts_with("model"), fn = ~ gsub("model", "Model ", .)) |>
     fmt_number(starts_with("model"), rows=var_indx, decimals = digits) |>
@@ -98,8 +104,25 @@ gt_model <- function(models, digits=3) {
     fmt_number(starts_with("model"), rows = matches("N$"), decimals = 0,
                use_seps=TRUE) |>
     fmt_number(starts_with("model"), rows = matches("R\\^2"), decimals = 3) |>
-    sub_missing(missing_text = "")
+    sub_missing(missing_text = "") |>
+    opt_footnote_marks(marks = c("*","**","***"))
 
+  # add asterisks
+  for(i in 1:m) {
+    gt_tbl <- gt_tbl |>
+      tab_footnote(footnote = "p < 0.05",
+                   locations=cells_body(columns=i+1,
+                                        rows=var_indx[which(p_thresh1[,i])]),
+                   placement = "right") #|>
+      #tab_footnote(footnote = "p < 0.01",
+      #             locations=cells_body(columns=i+1,
+      #                                  rows=var_indx[which(p_thresh2[,i])]),
+      #             placement = "right") |>
+      #tab_footnote(footnote = "p < 0.001",
+      #             locations=cells_body(columns=i+1,
+      #                                  rows=var_indx[which(p_thresh3[,i])]),
+      #             placement = "right")
+  }
 }
 
 gt_model(models)
