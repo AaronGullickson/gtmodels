@@ -81,7 +81,10 @@ gt_model <- function(models,
 
   # add asterisks
   # FIXME: If a particular threshold is not present in the data it doesn't show
-  # in the notes and the wrong number of asterisks are shown
+  # in the notes and the wrong number of asterisks are shown. Furthermore, the
+  # order of the footnotes is dictated by their first appearance in the table
+  # not first time they are added, so there is no guarantee of the proper
+  # ordering of asterisks
   if(!is.null(sig_thresh)) {
 
     # create pvalue matrix
