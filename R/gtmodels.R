@@ -36,7 +36,10 @@ transpose_tibble <- function(x) {
     as_tibble()
 }
 
-gt_model <- function(models, digits=3, var_labels=NULL) {
+gt_model <- function(models,
+                     digits=3,
+                     sig_thresh=c(0.05),
+                     var_labels=NULL) {
 
   # extract coefficients
   tbl_coef <- models |>
@@ -101,17 +104,6 @@ gt_model <- function(models, digits=3, var_labels=NULL) {
   se_indx <- seq(from=2, by=2, length.out=length(var_names))
   tbl$variable[se_indx] <- ""
 
-  # create pvalue matrix
-  tbl_p <- models |>
-    map(extract_pvalue) |>
-    bind_rows() |>
-    transpose_tibble()
-
-  # currently, multiple thresholds have some problems, so just use on threshold
-  p_thresh1 <- tbl_p<.05# & tbl_p>=.01
-  #p_thresh2 <- tbl_p<.01 & tbl_p>=.001
-  #p_thresh3 <- tbl_p<.001
-
   gt_tbl <- tbl |>
     gt(rowname_col = "variable") |>
     cols_label_with(starts_with("model"), fn = ~ gsub("model", "Model ", .)) |>
@@ -125,25 +117,42 @@ gt_model <- function(models, digits=3, var_labels=NULL) {
     opt_footnote_marks(marks = c("*","**","***"))
 
   # add asterisks
-  for(i in 1:m) {
-    gt_tbl <- gt_tbl |>
-      tab_footnote(footnote = "p < 0.05",
-                   locations=cells_body(columns=i+1,
-                                        rows=var_indx[which(p_thresh1[,i])]),
-                   placement = "right")
-      #tab_footnote(footnote = "p < 0.01",
-      #             locations=cells_body(columns=i+1,
-      #                                  rows=var_indx[which(p_thresh2[,i])]),
-      #             placement = "right") |>
-      #tab_footnote(footnote = "p < 0.001",
-      #             locations=cells_body(columns=i+1,
-      #                                  rows=var_indx[which(p_thresh3[,i])]),
-      #             placement = "right")
+  # FIXME: If a particular threshold is not present in the data it doesn't show
+  # in the notes and the wrong number of asterisks are shown
+  if(!is.null(sig_thresh)) {
+
+    # create pvalue matrix
+    tbl_p <- models |>
+      map(extract_pvalue) |>
+      bind_rows() |>
+      transpose_tibble()
+
+    thresholds <- list()
+    for(i in 1:length(sig_thresh)) {
+      if(i == length(sig_thresh)) {
+        thresholds[[i]] <- tbl_p < sig_thresh[i]
+      } else {
+        thresholds[[i]] <- tbl_p < sig_thresh[i] & tbl_p>=sig_thresh[i+1]
+      }
+    }
+
+    for(i in 1:m) {
+      for(j in 1:length(sig_thresh)) {
+        gt_tbl <- gt_tbl |>
+          tab_footnote(footnote = paste("p < ", sig_thresh[j], sep=""),
+                       locations = cells_body(columns=i+1,
+                                              rows=var_indx[which(thresholds[[j]][,i])]),
+                       placement = "right")
+      }
+    }
   }
 
   return(gt_tbl)
 }
 
-gt_model(models, digits=3, var_labels=name_correspondence) |>
+gt_model(models, digits=3, var_labels=name_correspondence,
+         sig_thresh=c(0.05,0.01,0.001)) |>
   tab_source_note("Note: Standard errors are shown in parenthesis.")
 
+
+model <- glm(sex ~ flipper_length_mm+body_mass_g, data=penguins)
