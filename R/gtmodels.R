@@ -1,28 +1,8 @@
-extract_summary <- function(model) {
-  n <- length(model1$fitted.values)
-  r.squared <- summary(model)$r.squared
-  return(c("N" = n, "$$R^2$$"=r.squared))
-}
-
-extract_se <- function(model) {
-  summary(model)$coef[,2]
-}
-
-extract_pvalue <- function(model) {
-  summary(model)$coef[,4]
-}
-
-transpose_tibble <- function(x) {
-  x |>
-    t() |>
-    as.data.frame() |>
-    as_tibble()
-}
-
 gt_model <- function(models,
                      digits=3,
                      sig_thresh=c(0.05),
-                     var_labels=NULL) {
+                     var_labels=NULL,
+                     summary_stats=NULL) {
 
   # extract coefficients
   tbl_coef <- models |>
@@ -36,7 +16,7 @@ gt_model <- function(models,
 
   # extract summary statistics
   tbl_summary <- models |>
-    map(extract_summary) |>
+    map(extract_summary, summary_stats) |>
     bind_rows()
 
   # get variable names for later
@@ -90,12 +70,11 @@ gt_model <- function(models,
 
   gt_tbl <- tbl |>
     gt(rowname_col = "variable") |>
-    fmt_number(starts_with("model"), rows=var_indx, decimals = digits) |>
+    fmt_number(starts_with("model"), decimals = digits) |>
     fmt_number(starts_with("model"), rows=se_indx, decimals = digits,
                pattern="({x})") |>
     fmt_number(starts_with("model"), rows = tidyselect::matches("N$"), decimals = 0,
                use_seps=TRUE) |>
-    fmt_number(starts_with("model"), rows = tidyselect::matches("R\\^2"), decimals = 3) |>
     sub_missing(missing_text = "") |>
     opt_footnote_marks(marks = c("*","**","***"))
 
@@ -131,4 +110,11 @@ gt_model <- function(models,
   }
 
   return(gt_tbl)
+}
+
+transpose_tibble <- function(x) {
+  x |>
+    t() |>
+    as.data.frame() |>
+    as_tibble()
 }
