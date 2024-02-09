@@ -1,20 +1,3 @@
-library(gt)
-library(tidyverse)
-library(palmerpenguins)
-library(stringr)
-
-model1 <- lm(bill_length_mm~flipper_length_mm, data=penguins)
-model2 <- update(model1, .~.+body_mass_g)
-model3 <- update(model2, .~.+sex)
-
-models <- list(model1, model2, model3)
-
-digits <- 3
-
-name_correspondence <- list("flipper_length_mm"="Flipper length (mm)",
-                            "body_mass_g"="Body Mass (g)",
-                            "sexmale"="Male")
-
 extract_summary <- function(model) {
   n <- length(model1$fitted.values)
   r.squared <- summary(model)$r.squared
@@ -110,9 +93,9 @@ gt_model <- function(models,
     fmt_number(starts_with("model"), rows=var_indx, decimals = digits) |>
     fmt_number(starts_with("model"), rows=se_indx, decimals = digits,
                pattern="({x})") |>
-    fmt_number(starts_with("model"), rows = matches("N$"), decimals = 0,
+    fmt_number(starts_with("model"), rows = tidyselect::matches("N$"), decimals = 0,
                use_seps=TRUE) |>
-    fmt_number(starts_with("model"), rows = matches("R\\^2"), decimals = 3) |>
+    fmt_number(starts_with("model"), rows = tidyselect::matches("R\\^2"), decimals = 3) |>
     sub_missing(missing_text = "") |>
     opt_footnote_marks(marks = c("*","**","***"))
 
@@ -151,8 +134,11 @@ gt_model <- function(models,
 }
 
 gt_model(models, digits=3, var_labels=name_correspondence,
-         sig_thresh=c(0.05,0.01,0.001)) |>
+         sig_thresh=c(0.05,0.01)) |>
   tab_source_note("Note: Standard errors are shown in parenthesis.")
 
 
-model <- glm(sex ~ flipper_length_mm+body_mass_g, data=penguins)
+modelb <- glm(sex ~ flipper_length_mm+body_mass_g, data=penguins, family=binomial)
+modela <- glm(sex ~ flipper_length_mm, data=penguins, family=binomial)
+
+gt_model(list(modela, modelb))
