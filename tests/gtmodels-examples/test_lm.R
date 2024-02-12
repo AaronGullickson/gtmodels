@@ -15,7 +15,7 @@ name_corr <- list("flipper_length_mm" = "Flipper length (mm)",
                   "sexmale" = "Male (ref. female)",
                   "BIC" = "Bayesian Information Criterion")
 
-gt_model(models, digits=3, var_labels=name_corr, sig_thresh=c(0.05,0.01),
+gt_model(models, digits=3, var_labels=name_corr,
          summary_stats=c("rsquared","adj_rsquared","bic")) |>
   cols_label(model1="(1)", model2="(2)", model3="(3)") |>
   fmt_number(columns=starts_with("model"),
@@ -43,3 +43,24 @@ gt_model(models, digits=3, var_labels=name_corr, sig_thresh=c(0.05,0.01, 0.001),
              rows=c("BIC","Log-Likelihood","Deviance", "Null Deviance"),
              decimals=1) |>
   tab_source_note(md("*Note:* Standard errors are shown in parenthesis."))
+
+# |>
+#   tab_options(table.width = pct(100)) |>
+#   #opt_table_lines(extent = "none") |>
+#   tab_style(style = cell_borders(sides="top", weight = px(1.5)),
+#             locations = cells_stub(rows=9)) |>
+#   tab_style(style = cell_borders(sides="top", weight = px(1.5)),
+#             locations = cells_body(rows=9)) |>
+#   tab_options(table_body.border.bottom.color = "black",
+#               table_body.border.top.color = "black",
+#               stub.border.color = "black",
+#               table_body.hlines.color = "white",
+#               table.border.bottom.color = "white",
+#               column_labels.border.bottom.width = "black",
+#               row_group.border.top.color = "red",
+#               stub_row_group.border.color = "red",
+#               footnotes.border.bottom.color = "red",
+#               footnotes.border.lr.color = "red")
+
+
+

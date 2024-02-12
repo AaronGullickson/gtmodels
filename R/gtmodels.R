@@ -1,6 +1,6 @@
 gt_model <- function(models,
                      digits=3,
-                     sig_thresh=c(0.05),
+                     sig_thresh=0.05,
                      var_labels=NULL,
                      summary_stats=NULL) {
 
@@ -93,24 +93,15 @@ gt_model <- function(models,
       bind_rows() |>
       transpose_tibble()
 
-    thresholds <- list()
-    for(i in 1:length(sig_thresh)) {
-      if(i == length(sig_thresh)) {
-        thresholds[[i]] <- tbl_p < sig_thresh[i]
-      } else {
-        thresholds[[i]] <- tbl_p < sig_thresh[i] & tbl_p>=sig_thresh[i+1]
-      }
-    }
+    is_sig <- tbl_p < sig_thresh
 
-
-    for(i in 1:length(sig_thresh)) {
-      for(j in 1:m) {
-        gt_tbl <- gt_tbl |>
-          tab_footnote(footnote = paste("p < ", sig_thresh[i], sep=""),
-                       locations = cells_body(columns=j+1,
-                                              rows=var_indx[which(thresholds[[i]][,j])]),
-                       placement = "right")
-      }
+    # loop through models and assign an asterisks
+    for(j in 1:m) {
+      gt_tbl <- gt_tbl |>
+        tab_footnote(footnote = paste("p < ", sig_thresh, sep=""),
+                     locations = cells_body(columns=j+1,
+                                            rows=var_indx[which(is_sig[,j])]),
+                     placement = "right")
     }
   }
 
