@@ -1,8 +1,11 @@
+
 gt_model <- function(models,
                      digits=3,
                      sig_thresh=0.05,
                      var_labels=NULL,
                      summary_stats=NULL) {
+
+  #### Create Full Table #####
 
   # extract coefficients
   tbl_coef <- models |>
@@ -47,19 +50,24 @@ gt_model <- function(models,
   # combine
   tbl <- bind_rows(tbl_combined, tbl_summary)
 
-  # set indexes
+  # set indices for later reference
   var_indx <- seq(from=1, by=2, length.out=length(var_names))
   se_indx <- seq(from=2, by=2, length.out=length(var_names))
 
-  # change names
+  #### Change Labels ####
+
+  # change call columns to "modelX"
   tbl <- tbl |>
     rename_with(~gsub("V", "model", .x))
 
+  # remove row labels on se lines
   tbl$variable[se_indx] <- ""
 
+  # remove parenthesis from intercept label
   tbl <- tbl |>
     mutate(variable = str_replace(variable, "\\(Intercept\\)", "Intercept"))
 
+  # if var_labels provided, rename all variables by labels
   if(!is.null(var_labels)) {
     for(vname in names(var_labels)) {
       tbl <- tbl |>
@@ -68,6 +76,8 @@ gt_model <- function(models,
                                       as.character(var_labels[vname])))
     }
   }
+
+  #### Construct basic gt table
 
   gt_tbl <- tbl |>
     gt(rowname_col = "variable") |>
@@ -80,12 +90,8 @@ gt_model <- function(models,
     opt_footnote_marks(marks = c("*","**","***")) |>
     tab_options(footnotes.multiline = FALSE, footnotes.sep=";")
 
-  # add asterisks
-  # FIXME: If a particular threshold is not present in the data it doesn't show
-  # in the notes and the wrong number of asterisks are shown. Furthermore, the
-  # order of the footnotes is dictated by their first appearance in the table
-  # not first time they are added, so there is no guarantee of the proper
-  # ordering of asterisks
+  #### Add Asterisks ####
+
   if(!is.null(sig_thresh)) {
 
     # create pvalue matrix
