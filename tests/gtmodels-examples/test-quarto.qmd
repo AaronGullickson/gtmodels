@@ -21,26 +21,32 @@ library(palmerpenguins)
 #| label: tbl-test
 #| tbl-cap: Test
 
-model1 <- lm(bill_length_mm~flipper_length_mm, data=penguins)
-model2 <- update(model1, .~.+body_mass_g)
-model3 <- update(model2, .~.+sex)
+model1 <- lm(bill_length_mm ~ flipper_length_mm, data = penguins)
+model2 <- update(model1, . ~ . + body_mass_g)
+model3 <- update(model2, . ~ . + sex)
 
 models <- list(model1, model2, model3)
 
-name_corr <- c("flipper_length_mm" = "Flipper Length (mm)",
-                  "body_mass_g" = "Body Mass (g)",
-                  "sexmale" = "Male (ref. female)",
-                  "bic" = "BIC",
-                  "rsquared" = "R-Squared",
-                  "adj_rsquared" = "Adjusted R-Squared")
+name_corr <- c(
+  "flipper_length_mm" = "Flipper Length (mm)",
+  "body_mass_g" = "Body Mass (g)",
+  "sexmale" = "Male (ref. female)",
+  "bic" = "BIC",
+  "rsquared" = "R-Squared",
+  "adj_rsquared" = "Adjusted R-Squared"
+)
 
-gt_model(models, digits=3, var_labels=name_corr,
-         summary_stats=c("rsquared","adj_rsquared","bic")) |>
-  cols_label(model1="(1)", model2="(2)", model3="(3)") |>
-  fmt_number(columns=starts_with("model"),
-             rows="BIC",
-             decimals=0) |>
-  tab_spanner(c(model1, model2, model3), label="Models") |>
+gt_model(models,
+  digits = 3, var_labels = name_corr,
+  summary_stats = c("rsquared", "adj_rsquared", "bic")
+) |>
+  cols_label(model1 = "(1)", model2 = "(2)", model3 = "(3)") |>
+  fmt_number(
+    columns = starts_with("model"),
+    rows = "BIC",
+    decimals = 0
+  ) |>
+  tab_spanner(c(model1, model2, model3), label = "Models") |>
   tab_source_note(md("*Note:* Standard errors are shown in parenthesis.")) |>
   tab_options(table.width = "100%")
 
@@ -54,5 +60,4 @@ gt_model(models, digits=3, var_labels=name_corr,
 #             locations = list(cells_body(rows=1), cells_stub(rows=1))) |>
 #   tab_style(style = cell_borders(sides="left"),
 #             locations = cells_body(columns=model1))
-
 ```
