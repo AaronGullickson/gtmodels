@@ -68,7 +68,7 @@ gt_model(list(model1, model2, model3), summary_stats=c("rsquared","bic"),
 
 I have taken this about as far as I want with the basic command, but now I can process it further by just piping it into subsequent `gt` commands:
 
-```{r example-gt}
+```{r example-gt, results='asis'}
 gt_model(list(model1, model2, model3), summary_stats=c("rsquared","bic"),
          var_labels = name_corr) |>
   cols_label(model1 = "(1)", model2 = "(2)", model3 = "(3)") |>
