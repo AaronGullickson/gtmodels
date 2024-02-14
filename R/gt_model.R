@@ -28,28 +28,6 @@
 #'
 #' @return \code{gt_model} returns a \code{gt_tbl} object that can be further processed using
 #' various commands from the \code{gt} package.
-#'
-#' @examples
-#' model1 <- lm(mpg~hp, data=mtcars)
-#' model2 <- update(model1, .~.+disp+wt)
-#' model3 <- update(model2, .~.+as.factor(cyl))
-#'
-#' name_corr <- c("Intercept" = "Constant",
-#'                "hp" = "Horsepower",
-#'                "disp" = "Displacement (cu. in.)",
-#'                "wt" = "Weight (1000 lbs)",
-#'                "as.factor\\(cyl\\)6" = "6-cylinder",
-#'                "as.factor\\(cyl\\)8" = "8-cylinder",
-#"                "rsquared" = "R-squared",
-#'                "bic" = "BIC")
-#'
-#' gt_model(list(model1, model2, model3),
-#'          var_labels = name_corr,
-#'          summary_stats=c("rsquared","bic")) |>
-#'   cols_label(model1="(1)", model2="(2)", model3="(3)") |>
-#'   fmt_number(rows = c("Constant","BIC"), decimals = 1) |>
-#'   tab_source_note(md("*Notes:* Standard errors shown in parenthesis. Reference for cylinders is a 4-cylinder engine.")) |>
-#'   tab_options(table.width = "100%")
 gt_model <- function(models,
                      digits=3,
                      sig_thresh=0.05,
@@ -60,18 +38,18 @@ gt_model <- function(models,
 
   # extract coefficients
   tbl_coef <- models |>
-    map(coef) |>
-    bind_rows()
+    purrr::map(coef) |>
+    dplyr::bind_rows()
 
   # extract standard errors
   tbl_se <- models |>
-    map(extract_se) |>
-    bind_rows()
+    purrr::map(extract_se) |>
+    dplyr::bind_rows()
 
   # extract summary statistics
   tbl_summary <- models |>
-    map(extract_summary, summary_stats) |>
-    bind_rows()
+    purrr::map(extract_summary, summary_stats) |>
+    dplyr::bind_rows()
 
   # get variable names for later
   var_names <- factor(colnames(tbl_coef),
@@ -82,24 +60,24 @@ gt_model <- function(models,
   # transpose both tables and convert back to tibbles
   tbl_coef <- tbl_coef |>
     transpose_tibble() |>
-    mutate(type="coef", variable=var_names)
+    dplyr::mutate(type="coef", variable=var_names)
 
   tbl_se <- tbl_se |>
     transpose_tibble() |>
-    mutate(type="se", variable=var_names)
+    dplyr::mutate(type="se", variable=var_names)
 
-  tbl_combined <- bind_rows(tbl_coef, tbl_se) |>
-    arrange(variable, type) |>
-    select(!type) |>
-    select(variable, everything())
+  tbl_combined <- dplyr::bind_rows(tbl_coef, tbl_se) |>
+    dplyr::arrange(variable, type) |>
+    dplyr::select(!type) |>
+    dplyr::select(variable, dplyr::everything())
 
   tbl_summary <- tbl_summary |>
     transpose_tibble() |>
-    mutate(variable=summary_names) |>
-    select(variable, everything())
+    dplyr::mutate(variable=summary_names) |>
+    dplyr::select(variable, dplyr::everything())
 
   # combine
-  tbl <- bind_rows(tbl_combined, tbl_summary)
+  tbl <- dplyr::bind_rows(tbl_combined, tbl_summary)
 
   # set indices for later reference
   var_indx <- seq(from=1, by=2, length.out=length(var_names))
@@ -109,37 +87,43 @@ gt_model <- function(models,
 
   # change call columns to "modelX"
   tbl <- tbl |>
-    rename_with(~gsub("V", "model", .x))
+    dplyr::rename_with(~gsub("V", "model", .x))
 
   # remove row labels on se lines
   tbl$variable[se_indx] <- ""
 
   # remove parenthesis from intercept label
   tbl <- tbl |>
-    mutate(variable = str_replace(variable, "\\(Intercept\\)", "Intercept"))
+    dplyr::mutate(variable = stringr::str_replace(variable,
+                                           "\\(Intercept\\)",
+                                           "Intercept"))
 
   # if var_labels provided, rename all variables by labels
   if(!is.null(var_labels)) {
     for(vname in names(var_labels)) {
       tbl <- tbl |>
-        mutate(variable = str_replace(variable,
-                                      paste("^", vname, "$", sep=""),
-                                      as.character(var_labels[vname])))
+        dplyr::mutate(variable = stringr::str_replace(
+          variable,
+          paste("^", vname, "$", sep=""),
+          as.character(var_labels[vname])))
     }
   }
 
   #### Construct basic gt table
 
   gt_tbl <- tbl |>
-    gt(rowname_col = "variable") |>
-    fmt_number(starts_with("model"), decimals = digits) |>
-    fmt_number(starts_with("model"), rows=se_indx, decimals = digits,
-               pattern="({x})") |>
-    fmt_number(starts_with("model"), rows = tidyselect::matches("^N$"),
-               decimals = 0) |>
-    sub_missing(missing_text = "") |>
-    opt_footnote_marks(marks = c("*","**","***")) |>
-    tab_options(footnotes.multiline = FALSE, footnotes.sep=";")
+    gt::gt(rowname_col = "variable") |>
+    gt::fmt_number(dplyr::starts_with("model"), decimals = digits) |>
+    gt::fmt_number(dplyr::starts_with("model"),
+                   rows=se_indx,
+                   decimals = digits,
+                   pattern="({x})") |>
+    gt::fmt_number(dplyr::starts_with("model"),
+                   rows = dplyr::matches("^N$"),
+                   decimals = 0) |>
+    gt::sub_missing(missing_text = "") |>
+    gt::opt_footnote_marks(marks = c("*","**","***")) |>
+    gt::tab_options(footnotes.multiline = FALSE, footnotes.sep=";")
 
   #### Add Asterisks ####
 
@@ -147,8 +131,8 @@ gt_model <- function(models,
 
     # create pvalue matrix
     tbl_p <- models |>
-      map(extract_pvalue) |>
-      bind_rows() |>
+      purrr::map(extract_pvalue) |>
+      dplyr::bind_rows() |>
       transpose_tibble()
 
     is_sig <- tbl_p < sig_thresh
@@ -156,10 +140,11 @@ gt_model <- function(models,
     # loop through models and assign an asterisks
     for(j in 1:m) {
       gt_tbl <- gt_tbl |>
-        tab_footnote(footnote = paste("p < ", sig_thresh, sep=""),
-                     locations = cells_body(columns=j+1,
-                                            rows=var_indx[which(is_sig[,j])]),
-                     placement = "right")
+        gt::tab_footnote(footnote = paste("p < ", sig_thresh, sep=""),
+                         locations = gt::cells_body(
+                           columns=j+1,
+                           rows=var_indx[which(is_sig[,j])]),
+                         placement = "right")
     }
   }
 
@@ -170,5 +155,5 @@ transpose_tibble <- function(x) {
   x |>
     t() |>
     as.data.frame() |>
-    as_tibble()
+    tibble::as_tibble()
 }
