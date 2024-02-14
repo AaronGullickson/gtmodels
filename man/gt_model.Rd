@@ -31,7 +31,8 @@ for a list of available options.}
 various commands from the \code{gt} package.
 }
 \description{
-A description
+\code{gt_model} outputs a list of models as a \code{gt_tbl} for
+display in Quarto, R Markdown, or other formats.
 }
 \details{
 This function can be used to create a \code{gt_tbl} table of model (i.e. regression) results

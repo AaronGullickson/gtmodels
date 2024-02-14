@@ -1,6 +1,7 @@
 #' Generate a gt table from model results.
 #'
-#' @description A description
+#' @description \code{gt_model} outputs a list of models as a \code{gt_tbl} for
+#' display in Quarto, R Markdown, or other formats.
 #'
 #' @param models a \code{list} of models, of either the \code{lm} or \code{glm} command.
 #' @param digits a numeric value indicating the number of decimals to round results to
