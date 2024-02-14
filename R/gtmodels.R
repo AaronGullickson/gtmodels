@@ -1,4 +1,55 @@
-
+#' Generate a gt table from model results.
+#'
+#' @description A description
+#'
+#' @param models a \code{list} of models, of either the \code{lm} or \code{glm} command.
+#' @param digits a numeric value indicating the number of decimals to round results to
+#' @param sig_thresh a numeric value indicating the threshold for statistical significance
+#'             for the asterisk. If NULL, asterisks will not be printed.
+#' @param var_labels a named character vector indicating labels for the rows. Names should
+#'             be the actual row names and values should be the labels desired.
+#' @param summary_stats a character vector indicating desired summary statistics. See below
+#'                for a list of available options.
+#' @details
+#' This function can be used to create a \code{gt_tbl} table of model (i.e. regression) results
+#' using a format common in many scientific fields. Multiple models can be included in the table
+#' by feeding in a list of model objects. The most common intended use of this function is within
+#` a Quarto document where the output will be displayed nicely in the final output.
+#' Currently the following models are verified to work:
+#'
+#' Because the returned object is a \code{gt_tbl}, it can be further refined to the user's
+#' tastes by piping it into subsequent \code{gt} commands.
+#'
+#' The returned table uses a label row for the variable label and summary statistics labels. All
+#" model columns will be named as \code{modelX} where X is the index of the model (e.g. model1, model2).
+#' Users can rename the models with a \code{cols_label} command. Variables and summary statistics
+#' can be renamed by the \code{var_labels} argument which takes a named character vector that
+#' provides the correspondence between original and new variable names (see examples below).
+#'
+#' @return \code{gt_model} returns a \code{gt_tbl} object that can be further processed using
+#' various commands from the \code{gt} package.
+#'
+#' @examples
+#' model1 <- lm(mpg~hp, data=mtcars)
+#' model2 <- update(model1, .~.+disp+wt)
+#' model3 <- update(model2, .~.+as.factor(cyl))
+#'
+#' name_corr <- c("Intercept" = "Constant",
+#'                "hp" = "Horsepower",
+#'                "disp" = "Displacement (cu. in.)",
+#'                "wt" = "Weight (1000 lbs)",
+#'                "as.factor\\(cyl\\)6" = "6-cylinder",
+#'                "as.factor\\(cyl\\)8" = "8-cylinder",
+#"                "rsquared" = "R-squared",
+#'                "bic" = "BIC")
+#'
+#' gt_model(list(model1, model2, model3),
+#'          var_labels = name_corr,
+#'          summary_stats=c("rsquared","bic")) |>
+#'   cols_label(model1="(1)", model2="(2)", model3="(3)") |>
+#'   fmt_number(rows = c("Constant","BIC"), decimals = 1) |>
+#'   tab_source_note(md("*Notes:* Standard errors shown in parenthesis. Reference for cylinders is a 4-cylinder engine.")) |>
+#'   tab_options(table.width = "100%")
 gt_model <- function(models,
                      digits=3,
                      sig_thresh=0.05,
