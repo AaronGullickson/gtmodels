@@ -28,6 +28,31 @@
 #'
 #' @return \code{gt_model} returns a \code{gt_tbl} object that can be further processed using
 #' various commands from the \code{gt} package.
+#'
+#' @examples
+#' if (require("gt")) {
+#'   model1 <- lm(mpg ~ hp, data = mtcars)
+#'   model2 <- update(model1, . ~ . + disp + wt)
+#'   model3 <- update(model2, . ~ . + as.factor(cyl))
+#'
+#'   name_corr <- c("Intercept" = "Constant",
+#'                  "hp" = "Horsepower",
+#'                  "disp" = "Displacement (cu. in.)",
+#'                  "wt" = "Weight (1000 lbs)",
+#'                  "as.factor\\(cyl\\)6" = "6-cylinder",
+#'                  "as.factor\\(cyl\\)8" = "8-cylinder",
+#'                  "rsquared" = "R-squared",
+#'                  "bic" = "BIC")
+#'
+#'   gt_model(list(model1, model2, model3), var_labels = name_corr,
+#'            summary_stats = c("rsquared", "bic")) |>
+#'     cols_label(model1 = "(1)", model2 = "(2)", model3 = "(3)") |>
+#'     fmt_number(rows = c("Constant", "BIC"), decimals = 1) |>
+#'     tab_source_note(md("*Notes:* Standard errors shown in parenthesis. Reference for cylinders is a 4-cylinder engine.")) |>
+#'     tab_options(table.width = "100%")
+#' }
+#' @import gt
+#' @export
 gt_model <- function(models,
                      digits = 3,
                      sig_thresh = 0.05,
@@ -115,20 +140,20 @@ gt_model <- function(models,
   #### Construct basic gt table
 
   gt_tbl <- tbl |>
-    gt::gt(rowname_col = "variable") |>
-    gt::fmt_number(dplyr::starts_with("model"), decimals = digits) |>
-    gt::fmt_number(dplyr::starts_with("model"),
+    gt(rowname_col = "variable") |>
+    fmt_number(dplyr::starts_with("model"), decimals = digits) |>
+    fmt_number(dplyr::starts_with("model"),
       rows = se_indx,
       decimals = digits,
       pattern = "({x})"
     ) |>
-    gt::fmt_number(dplyr::starts_with("model"),
+    fmt_number(dplyr::starts_with("model"),
       rows = dplyr::matches("^N$"),
       decimals = 0
     ) |>
-    gt::sub_missing(missing_text = "") |>
-    gt::opt_footnote_marks(marks = c("*", "**", "***")) |>
-    gt::tab_options(footnotes.multiline = FALSE, footnotes.sep = ";")
+    sub_missing(missing_text = "") |>
+    opt_footnote_marks(marks = c("*", "**", "***")) |>
+    tab_options(footnotes.multiline = FALSE, footnotes.sep = ";")
 
   #### Add Asterisks ####
 
@@ -144,9 +169,9 @@ gt_model <- function(models,
     # loop through models and assign an asterisks
     for (j in 1:m) {
       gt_tbl <- gt_tbl |>
-        gt::tab_footnote(
+        tab_footnote(
           footnote = paste("p < ", sig_thresh, sep = ""),
-          locations = gt::cells_body(
+          locations = cells_body(
             columns = j + 1,
             rows = var_indx[which(is_sig[, j])]
           ),

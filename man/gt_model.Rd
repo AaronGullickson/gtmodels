@@ -47,3 +47,26 @@ Users can rename the models with a \code{cols_label} command. Variables and summ
 can be renamed by the \code{var_labels} argument which takes a named character vector that
 provides the correspondence between original and new variable names (see examples below).
 }
+\examples{
+if (require("gt")) {
+  model1 <- lm(mpg ~ hp, data = mtcars)
+  model2 <- update(model1, . ~ . + disp + wt)
+  model3 <- update(model2, . ~ . + as.factor(cyl))
+
+  name_corr <- c("Intercept" = "Constant",
+                 "hp" = "Horsepower",
+                 "disp" = "Displacement (cu. in.)",
+                 "wt" = "Weight (1000 lbs)",
+                 "as.factor\\\\(cyl\\\\)6" = "6-cylinder",
+                 "as.factor\\\\(cyl\\\\)8" = "8-cylinder",
+                 "rsquared" = "R-squared",
+                 "bic" = "BIC")
+
+  gt_model(list(model1, model2, model3), var_labels = name_corr,
+           summary_stats = c("rsquared", "bic")) |>
+    cols_label(model1 = "(1)", model2 = "(2)", model3 = "(3)") |>
+    fmt_number(rows = c("Constant", "BIC"), decimals = 1) |>
+    tab_source_note(md("*Notes:* Standard errors shown in parenthesis. Reference for cylinders is a 4-cylinder engine.")) |>
+    tab_options(table.width = "100\%")
+}
+}
