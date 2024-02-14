@@ -15,22 +15,22 @@ extract_summary <- function(model, summary_stats=NULL) {
   sum_stats <- c("N" = n)
 
   if("rsquared" %in% summary_stats) {
-    sum_stats <- c(sum_stats, "R-squared"=extract_rsquared(model))
+    sum_stats <- c(sum_stats, "rsquared"=extract_rsquared(model))
   }
   if("pseudo_rsquared" %in% summary_stats) {
-    sum_stats <- c(sum_stats, "Pseudo R-squared"=extract_pseudo_rsquared(model))
+    sum_stats <- c(sum_stats, "pseudo_rsquared"=extract_pseudo_rsquared(model))
   }
   if("adj_rsquared" %in% summary_stats) {
-    sum_stats <- c(sum_stats, "Adj. R-squared"=extract_adj_rsquared(model))
+    sum_stats <- c(sum_stats, "adj_rsquared"=extract_adj_rsquared(model))
   }
   if("bic" %in% summary_stats) {
-    sum_stats <- c(sum_stats, "BIC"=extract_bic(model))
+    sum_stats <- c(sum_stats, "bic"=extract_bic(model))
   }
   if("loglik" %in% summary_stats) {
-    sum_stats <- c(sum_stats, "Log-Likelihood"=extract_loglik(model))
+    sum_stats <- c(sum_stats, "loglik"=extract_loglik(model))
   }
   if("deviance" %in% summary_stats) {
-    sum_stats <- c(sum_stats, "Deviance"=extract_deviance(model))
+    sum_stats <- c(sum_stats, "deviance"=extract_deviance(model))
   }
 
   return(sum_stats)

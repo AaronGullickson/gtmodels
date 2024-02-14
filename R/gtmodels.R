@@ -63,7 +63,8 @@ gt_model <- function(models,
   if(!is.null(var_labels)) {
     for(vname in names(var_labels)) {
       tbl <- tbl |>
-        mutate(variable = str_replace(variable, vname,
+        mutate(variable = str_replace(variable,
+                                      paste("^", vname, "$", sep=""),
                                       as.character(var_labels[vname])))
     }
   }
@@ -73,7 +74,7 @@ gt_model <- function(models,
     fmt_number(starts_with("model"), decimals = digits) |>
     fmt_number(starts_with("model"), rows=se_indx, decimals = digits,
                pattern="({x})") |>
-    fmt_number(starts_with("model"), rows = tidyselect::matches("N$"),
+    fmt_number(starts_with("model"), rows = tidyselect::matches("^N$"),
                decimals = 0) |>
     sub_missing(missing_text = "") |>
     opt_footnote_marks(marks = c("*","**","***")) |>
