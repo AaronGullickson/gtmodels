@@ -18,11 +18,11 @@ knitr::opts_chunk$set(
 <!-- badges: start -->
 <!-- badges: end -->
 
-The goal of gtmodels is to ...
+The `gtmodels` package allows you to output multiple models as a single `gt_tbl` table using the [gt](https://gt.rstudio.com/) package. This output can easily be embedded in R Markdown and Quarto documents. Furthermore, because the output is a `gt_tbl` object, it can easily be customized further by the user using standard `gt` commands. 
 
 ## Installation
 
-You can install the development version of gtmodels from [GitHub](https://github.com/) with:
+You can install the development version of `gtmodels` from [GitHub](https://github.com/) with:
 
 ``` r
 # install.packages("devtools")
@@ -31,25 +31,48 @@ devtools::install_github("AaronGullickson/gtmodels")
 
 ## Example
 
-This is a basic example which shows you how to solve a common problem:
+This is a basic example which shows you how to build a table containing several models:
 
-```{r example}
+```{r example-intro}
+library(gt)
 library(gtmodels)
-## basic example code
+model1 <- lm(mpg ~ hp, data = mtcars)
+model2 <- update(model1, . ~ . + disp + wt)
+model3 <- update(model2, . ~ . + as.factor(cyl))
+
+gt_model(list(model1, model2, model3))
 ```
 
-What is special about using `README.Rmd` instead of just `README.md`? You can include R chunks like so:
+Right now, the table doesn't look like much but I can make some quick and easy changes using additional arguments in `gt_model`. First, I can add some predefined summary statistics:
 
-```{r cars}
-summary(cars)
+```{r example-summary-stats}
+gt_model(list(model1, model2, model3), summary_stats=c("rsquared","bic"))
 ```
 
-You'll still need to render `README.Rmd` regularly, to keep `README.md` up-to-date. `devtools::build_readme()` is handy for this.
+Now lets change the variable labels by creating a named vector that gives us the correspondence between old and new names.
 
-You can also embed plots, for example:
+```{r example-var-labels}
+# create a named vector or labels for the variable names
+name_corr <- c("Intercept" = "Constant",
+               "hp" = "Horsepower",
+               "disp" = "Displacement (cu. in.)",
+               "wt" = "Weight (1000 lbs)",
+               "as.factor\\(cyl\\)6" = "6-cylinder",
+               "as.factor\\(cyl\\)8" = "8-cylinder",
+               "rsquared" = "R-squared",
+               "bic" = "BIC")
 
-```{r pressure, echo = FALSE}
-plot(pressure)
+gt_model(list(model1, model2, model3), summary_stats=c("rsquared","bic"),
+         var_labels = name_corr)
 ```
 
-In that case, don't forget to commit and push the resulting figure files, so they display on GitHub and CRAN.
+I have taken this about as far as I want with the basic command, but now I can process it further by just piping it into subsequent `gt` commands:
+
+```{r example-gt}
+gt_model(list(model1, model2, model3), summary_stats=c("rsquared","bic"),
+         var_labels = name_corr) |>
+  cols_label(model1 = "(1)", model2 = "(2)", model3 = "(3)") |>
+  fmt_number(rows = c("Constant", "BIC"), decimals = 1) |>
+  tab_source_note(md("*Notes:* Standard errors shown in parenthesis. Reference for cylinders is a 4-cylinder engine.")) |>
+  tab_options(table.width = "100%", row.striping.include_stub = TRUE)
+```
