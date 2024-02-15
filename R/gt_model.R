@@ -43,7 +43,7 @@
 #'             either the actual variable names in the R model output for variables or
 #'             summary statistic names for summary statistics.
 #' @param parenthetical_value A character string of either "se", "tstat", or "pvalue"
-#'.            indicating what to include in parenthesis. Defaults to standard errors.
+#'             indicating what to include in parenthesis. Defaults to standard errors.
 #' @param beside A logical indicating whether to show the parenthetical value
 #'            on the same row (TRUE) or a separate row (FALSE; default).
 #'

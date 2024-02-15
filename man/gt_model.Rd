@@ -33,7 +33,7 @@ summary statistic names for summary statistics.}
 on the same row (TRUE) or a separate row (FALSE; default).}
 
 \item{parenthetical_value}{A character string of either "se", "tstat", or "pvalue"
-.            indicating what to include in parenthesis. Defaults to standard errors.}
+indicating what to include in parenthesis. Defaults to standard errors.}
 }
 \value{
 \code{gt_model} returns a \code{gt_tbl} object that can be further processed using
