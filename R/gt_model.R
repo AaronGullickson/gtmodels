@@ -145,18 +145,6 @@ gt_model <- function(models,
   tbl <- tbl |>
     dplyr::rename_with(~ gsub("V", "model", .x))
 
-  # if var_labels provided, rename all variables by labels
-  # if (!is.null(var_labels)) {
-  #   for (vname in names(var_labels)) {
-  #     tbl <- tbl |>
-  #       dplyr::mutate(variable = stringr::str_replace(
-  #         variable,
-  #         paste("^", vname, "$", sep = ""),
-  #         as.character(var_labels[vname])
-  #       ))
-  #   }
-  # }
-
   #### Construct gt table ####
 
   tbl_gt_model <- tbl |>
