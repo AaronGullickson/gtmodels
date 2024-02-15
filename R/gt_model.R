@@ -87,7 +87,7 @@ gt_model <- function(models,
                      sig_thresh = 0.05,
                      summary_stats = NULL,
                      var_labels = c("n" = "N"),
-                     parenthetical_type = "se",
+                     parenthetical_value = "se",
                      parenthesis_type = "regular",
                      beside = FALSE,
                      groups=NULL) {
@@ -100,17 +100,17 @@ gt_model <- function(models,
     dplyr::bind_rows()
 
   # extract parenthetical values
-  if(parenthetical_type == "tstat") {
+  if(parenthetical_value == "tstat") {
     tbl_par <- models |>
       purrr::map(extract_tstat) |>
       dplyr::bind_rows()
-  } else if(parenthetical_type == "pvalue") {
+  } else if(parenthetical_value == "pvalue") {
     tbl_par <- models |>
       purrr::map(extract_pvalue) |>
       dplyr::bind_rows()
   } else {
     # default to standard errors
-    if(parenthetical_type != "se") {
+    if(parenthetical_value != "se") {
       message("argument to parenthetical type not recognized. Defaulting to standard errors")
     }
     tbl_par <- models |>

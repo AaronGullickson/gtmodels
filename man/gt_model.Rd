@@ -10,7 +10,7 @@ gt_model(
   sig_thresh = 0.05,
   summary_stats = NULL,
   var_labels = c(n = "N"),
-  parenthetical_type = "se",
+  parenthetical_value = "se",
   parenthesis_type = "regular",
   beside = FALSE,
   groups = NULL
@@ -31,6 +31,9 @@ for a list of available options.}
 either the actual variable names in the R model output for variables or
 summary statistic names for summary statistics.}
 
+\item{parenthetical_value}{A character string of either "se", "tstat", or "pvalue"
+indicating what to include in parenthesis. Defaults to standard errors.}
+
 \item{parenthesis_type}{A character string of either "regular", "square", or "curly" indicating
 the type of parenthesis to use for parenthetical values.}
 
@@ -40,9 +43,6 @@ on the same row (TRUE) or a separate row (FALSE; default).}
 \item{groups}{A character vector indicating the factor name for variables that
 should be grouped together under a heading row (e.g. for categorical
 variables).}
-
-\item{parenthetical_value}{A character string of either "se", "tstat", or "pvalue"
-indicating what to include in parenthesis. Defaults to standard errors.}
 }
 \value{
 \code{gt_model} returns a \code{gt_tbl} object that can be further processed using
