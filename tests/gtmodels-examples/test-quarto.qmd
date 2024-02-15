@@ -36,16 +36,10 @@ name_corr <- c(
   "adj_rsquared" = "Adjusted R-Squared"
 )
 
-gt_model(models,
-  digits = 3, var_labels = name_corr,
-  summary_stats = c("rsquared", "adj_rsquared", "bic")
-) |>
+gt_model(models, digits = 3, var_labels = name_corr,
+         summary_stats = c("rsquared", "adj_rsquared", "bic")) |>
   cols_label(model1 = "(1)", model2 = "(2)", model3 = "(3)") |>
-  fmt_number(
-    columns = starts_with("model"),
-    rows = "BIC",
-    decimals = 0
-  ) |>
+  fmt_number(rows = "BIC", decimals = 0) |>
   tab_spanner(c(model1, model2, model3), label = "Models") |>
   tab_source_note(md("*Note:* Standard errors are shown in parenthesis.")) |>
   tab_options(table.width = "100%")
