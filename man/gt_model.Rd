@@ -8,8 +8,9 @@ gt_model(
   models,
   digits = 3,
   sig_thresh = 0.05,
-  var_labels = c(`(Intercept)` = "Intercept", n = "N"),
   summary_stats = NULL,
+  var_labels = c(`(Intercept)` = "Intercept", n = "N"),
+  parenthetical_type = "se",
   beside = FALSE
 )
 }
@@ -21,14 +22,18 @@ gt_model(
 \item{sig_thresh}{a numeric value indicating the threshold for statistical significance
 for the asterisk. If NULL, asterisks will not be printed.}
 
-\item{var_labels}{a named character vector indicating labels for the rows. Names should
-be the actual row names and values should be the labels desired.}
-
 \item{summary_stats}{a character vector indicating desired summary statistics. See below
 for a list of available options.}
 
+\item{var_labels}{a named character vector indicating labels for the rows. Names should
+either the actual variable names in the R model output for variables or
+summary statistic names for summary statistics.}
+
 \item{beside}{A logical indicating whether to show the parenthetical value
 on the same row (TRUE) or a separate row (FALSE; default).}
+
+\item{parenthetical_value}{A character string of either "se", "tstat", or "pvalue"
+.            indicating what to include in parenthesis. Defaults to standard errors.}
 }
 \value{
 \code{gt_model} returns a \code{gt_tbl} object that can be further processed using
@@ -52,7 +57,7 @@ Currently the following models are verified to work:
 Because the returned object is a \code{gt_tbl}, it can be further refined to the user's
 tastes by piping it into subsequent \link{gt} commands.
 
-The returned table uses a "stub" column for the variable label and summary statistics labels. All
+The returned table uses a "stub" column for the variable and summary statistics labels. All
 model columns will be named as \code{modelX} where X is the index of the model (e.g. model1, model2).
 Users can rename the models with a \code{cols_label} command. Variables and summary statistics
 can be renamed by the \code{var_labels} argument which takes a named character vector that
@@ -80,8 +85,8 @@ if (require("gt")) {
                  "hp" = "Horsepower",
                  "disp" = "Displacement (cu. in.)",
                  "wt" = "Weight (1000 lbs)",
-                 "as.factor\\\\(cyl\\\\)6" = "6-cylinder",
-                 "as.factor\\\\(cyl\\\\)8" = "8-cylinder",
+                 "as.factor(cyl)6" = "6-cylinder",
+                 "as.factor(cyl)8" = "8-cylinder",
                  "rsquared" = "R-squared",
                  "bic" = "BIC")
 

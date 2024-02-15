@@ -6,6 +6,10 @@ extract_se <- function(model) {
   summary(model)$coef[, 2]
 }
 
+extract_tstat <- function(model) {
+  summary(model)$coef[, 3]
+}
+
 extract_pvalue <- function(model) {
   summary(model)$coef[, 4]
 }

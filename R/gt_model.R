@@ -42,6 +42,8 @@
 #' @param var_labels a named character vector indicating labels for the rows. Names should
 #'             either the actual variable names in the R model output for variables or
 #'             summary statistic names for summary statistics.
+#' @param parenthetical_value A character string of either "se", "tstat", or "pvalue"
+#'.            indicating what to include in parenthesis. Defaults to standard errors.
 #' @param beside A logical indicating whether to show the parenthetical value
 #'            on the same row (TRUE) or a separate row (FALSE; default).
 #'
@@ -77,6 +79,7 @@ gt_model <- function(models,
                      sig_thresh = 0.05,
                      summary_stats = NULL,
                      var_labels = c("(Intercept)" = "Intercept", "n" = "N"),
+                     parenthetical_type = "se",
                      beside = FALSE) {
 
   #### Create Table Parts #####
@@ -86,10 +89,25 @@ gt_model <- function(models,
     purrr::map(coef) |>
     dplyr::bind_rows()
 
-  # extract standard errors
-  tbl_se <- models |>
-    purrr::map(extract_se) |>
-    dplyr::bind_rows()
+  # extract parenthetical values
+  if(parenthetical_type == "tstat") {
+    tbl_par <- models |>
+      purrr::map(extract_tstat) |>
+      dplyr::bind_rows()
+  } else if(parenthetical_type == "pvalue") {
+    tbl_par <- models |>
+      purrr::map(extract_pvalue) |>
+      dplyr::bind_rows()
+  } else {
+    # default to standard errors
+    if(parenthetical_type != "se") {
+      message("argument to parenthetical type not recognized. Defaulting to standard errors")
+    }
+    tbl_par <- models |>
+      purrr::map(extract_se) |>
+      dplyr::bind_rows()
+  }
+
 
   # extract summary statistics
   tbl_summary <- models |>
@@ -106,14 +124,14 @@ gt_model <- function(models,
     transpose_tibble() |>
     dplyr::mutate(type = "coef", variable = var_names)
 
-  tbl_se <- tbl_se |>
+  tbl_par <- tbl_par |>
     transpose_tibble() |>
-    dplyr::mutate(type = "se", variable = var_names)
+    dplyr::mutate(type = "par", variable = var_names)
 
   #### Construct Full Table ####
 
   if(beside) {
-    tbl_combined <- dplyr::bind_rows(tbl_coef, tbl_se) |>
+    tbl_combined <- dplyr::bind_rows(tbl_coef, tbl_par) |>
       tidyr::pivot_wider(id_cols=variable,
                          names_from=type,
                          values_from=matches("^V[0-9]")) |>
@@ -123,11 +141,11 @@ gt_model <- function(models,
       transpose_tibble() |>
       dplyr::mutate(variable = paste("summary", summary_names, sep=":")) |>
       dplyr::select(variable, dplyr::everything()) |>
-      dplyr::rename_with(~ paste0(.x, "_se", sep=""), matches("^V[0-9]"))
+      dplyr::rename_with(~ paste0(.x, "_par", sep=""), matches("^V[0-9]"))
 
     tbl <- dplyr::bind_rows(tbl_combined, tbl_summary)
   } else {
-    tbl_combined <- dplyr::bind_rows(tbl_coef, tbl_se) |>
+    tbl_combined <- dplyr::bind_rows(tbl_coef, tbl_par) |>
       dplyr::arrange(variable, type) |>
       dplyr::mutate(variable = paste(type, variable, sep=":")) |>
       dplyr::select(!type) |>
@@ -158,17 +176,17 @@ gt_model <- function(models,
   # wrap parenthetical values in parenthesis
   if(beside) {
     tbl_gt_model <- tbl_gt_model |>
-      fmt_number(columns = ends_with("_se"),
+      fmt_number(columns = ends_with("_par"),
                  rows = starts_with("coef:"),
                  pattern = "({x})")
   } else {
     tbl_gt_model <- tbl_gt_model |>
-      fmt_number(rows = starts_with("se:"), pattern = "({x})")
+      fmt_number(rows = starts_with("par:"), pattern = "({x})")
   }
 
   # remove "se:" stub labels
   tbl_gt_model <- tbl_gt_model |>
-    text_replace(".*", "", locations = cells_stub(rows = matches("^se:")))
+    text_replace(".*", "", locations = cells_stub(rows = matches("^par:")))
 
   # replace variable labels
   if(!is.null(var_labels)) {
