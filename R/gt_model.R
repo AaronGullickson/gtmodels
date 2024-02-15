@@ -21,8 +21,8 @@
 #' provides the correspondence between original and new variable names (see examples below).
 #'
 #' All rows have a label prefix that can be used to identify sets of rows or particular rows.
-#' Each row label begins with either "coef:", "par:", or "summary:" depending on whether it is
-#' a model coefficient, parenthetical value, or summary statistic. This is followed by either the
+#' Each row label begins with either "coef:", "par:", "summary:", or "grp:" depending on whether it is
+#' a model coefficient, parenthetical value, summary statistic, or variable group row, respectively. This is followed by either the
 #' name of the variable in R or the name of the summary statistic. These labels will still apply
 #' even if the `var_labels` argument has been used for different labeling in the printed table.
 #' User can use this to access specific rows or types of rows. For example, to change the
@@ -48,6 +48,9 @@
 #'             the type of parenthesis to use for parenthetical values.
 #' @param beside A logical indicating whether to show the parenthetical value
 #'            on the same row (TRUE) or a separate row (FALSE; default).
+#' @param groups A character vector indicating the factor name for variables that
+#'               should be grouped together under a heading row (e.g. for categorical
+#'               variables).
 #'
 #' @return `gt_model` returns a `gt_tbl` object that can be further processed using
 #' various commands from the [gt] package.
@@ -62,13 +65,16 @@
 #'                  "hp" = "Horsepower",
 #'                  "disp" = "Displacement (cu. in.)",
 #'                  "wt" = "Weight (1000 lbs)",
+#'                  "as.factor(cyl)" = "Number of cylinders (ref. 4-cylinder)",
 #'                  "as.factor(cyl)6" = "6-cylinder",
 #'                  "as.factor(cyl)8" = "8-cylinder",
+#'                  "n" = "N",
 #'                  "rsquared" = "R-squared",
 #'                  "bic" = "BIC")
 #'
 #'   gt_model(list(model1, model2, model3), var_labels = name_corr,
-#'            summary_stats = c("rsquared", "bic")) |>
+#'            summary_stats = c("rsquared", "bic"),
+#'            groups=c("as.factor(cyl)")) |>
 #'     cols_label(model1 = "(1)", model2 = "(2)", model3 = "(3)") |>
 #'     fmt_number(rows = c("summary:bic"), decimals = 1) |>
 #'     tab_source_note(md("*Notes:* Standard errors shown in parenthesis.")) |>
@@ -84,7 +90,7 @@ gt_model <- function(models,
                      parenthetical_type = "se",
                      parenthesis_type = "regular",
                      beside = FALSE,
-                     ) {
+                     groups=NULL) {
 
   #### Create Table Parts #####
 
@@ -166,6 +172,31 @@ gt_model <- function(models,
   tbl <- tbl |>
     dplyr::rename_with(~ gsub("V", "model", .x))
 
+  #### Add groups ####
+
+  # start a list of row labels to indent
+  indent_list <- NULL
+  for(group in groups) {
+    # get all members of this group by index
+    indx_grp <- which(stringr::str_detect(tbl$variable,
+                                          stringr::fixed(paste("coef",
+                                                               group,
+                                                               sep=":"))))
+    # get first index where this group occurs
+    indx_first <- indx_grp[1]
+    if(is.na(indx_first)) {
+      next
+    }
+
+    # collect row labels for later indentation
+    indent_list <- c(indent_list, tbl$variable[indx_grp])
+
+    # insert group row
+    tbl <- tbl |>
+      tibble::add_row(variable=paste("grp", group, sep=":"),
+                      .before=indx_first)
+  }
+
   #### Construct gt Table ####
 
   tbl_gt_model <- tbl |>
@@ -198,7 +229,7 @@ gt_model <- function(models,
                  decimals = digits)
   }
 
-  # remove "se:" stub labels
+  # remove "par:" stub labels
   tbl_gt_model <- tbl_gt_model |>
     text_replace(".*", "", locations = cells_stub(rows = matches("^par:")))
 
@@ -207,12 +238,18 @@ gt_model <- function(models,
     tbl_gt_model <- tbl_gt_model |>
       text_transform(
         fn = function(x) {
-          replacement <- var_labels[stringr::str_remove(x, "^(coef|summary):")]
+          replacement <- var_labels[stringr::str_remove(x, "^(coef|grp|summary):")]
           replacement[which(is.na(replacement))] <- x[which(is.na(replacement))]
           return(replacement)
         },
-        locations = cells_stub(rows = matches("^(coef|summary):"))
+        locations = cells_stub(rows = matches("^(coef|grp|summary):"))
       )
+  }
+
+  # apply indents
+  if(length(indent_list) > 0) {
+    tbl_gt_model <- tbl_gt_model |>
+      tab_stub_indent(rows=indent_list, indent=3)
   }
 
   #### Add Asterisks ####

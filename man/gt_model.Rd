@@ -9,10 +9,11 @@ gt_model(
   digits = 3,
   sig_thresh = 0.05,
   summary_stats = NULL,
-  var_labels = c(`(Intercept)` = "Intercept", n = "N"),
+  var_labels = c(n = "N"),
   parenthetical_type = "se",
   parenthesis_type = "regular",
-  beside = FALSE
+  beside = FALSE,
+  groups = NULL
 )
 }
 \arguments{
@@ -35,6 +36,10 @@ the type of parenthesis to use for parenthetical values.}
 
 \item{beside}{A logical indicating whether to show the parenthetical value
 on the same row (TRUE) or a separate row (FALSE; default).}
+
+\item{groups}{A character vector indicating the factor name for variables that
+should be grouped together under a heading row (e.g. for categorical
+variables).}
 
 \item{parenthetical_value}{A character string of either "se", "tstat", or "pvalue"
 indicating what to include in parenthesis. Defaults to standard errors.}
@@ -68,8 +73,8 @@ can be renamed by the \code{var_labels} argument which takes a named character v
 provides the correspondence between original and new variable names (see examples below).
 
 All rows have a label prefix that can be used to identify sets of rows or particular rows.
-Each row label begins with either "coef:", "par:", or "summary:" depending on whether it is
-a model coefficient, parenthetical value, or summary statistic. This is followed by either the
+Each row label begins with either "coef:", "par:", "summary:", or "grp:" depending on whether it is
+a model coefficient, parenthetical value, summary statistic, or variable group row, respectively. This is followed by either the
 name of the variable in R or the name of the summary statistic. These labels will still apply
 even if the \code{var_labels} argument has been used for different labeling in the printed table.
 User can use this to access specific rows or types of rows. For example, to change the
@@ -89,13 +94,16 @@ if (require("gt")) {
                  "hp" = "Horsepower",
                  "disp" = "Displacement (cu. in.)",
                  "wt" = "Weight (1000 lbs)",
+                 "as.factor(cyl)" = "Number of cylinders (ref. 4-cylinder)",
                  "as.factor(cyl)6" = "6-cylinder",
                  "as.factor(cyl)8" = "8-cylinder",
+                 "n" = "N",
                  "rsquared" = "R-squared",
                  "bic" = "BIC")
 
   gt_model(list(model1, model2, model3), var_labels = name_corr,
-           summary_stats = c("rsquared", "bic")) |>
+           summary_stats = c("rsquared", "bic"),
+           groups=c("as.factor(cyl)")) |>
     cols_label(model1 = "(1)", model2 = "(2)", model3 = "(3)") |>
     fmt_number(rows = c("summary:bic"), decimals = 1) |>
     tab_source_note(md("*Notes:* Standard errors shown in parenthesis.")) |>
