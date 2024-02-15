@@ -111,7 +111,6 @@ gt_model <- function(models,
       dplyr::bind_rows()
   }
 
-
   # extract summary statistics
   tbl_summary <- models |>
     purrr::map(extract_summary, summary_stats) |>
@@ -189,10 +188,13 @@ gt_model <- function(models,
     tbl_gt_model <- tbl_gt_model |>
       fmt_number(columns = ends_with("_par"),
                  rows = starts_with("coef:"),
-                 pattern = parenthesis_pattern)
+                 pattern = parenthesis_pattern,
+                 decimals = digits)
   } else {
     tbl_gt_model <- tbl_gt_model |>
-      fmt_number(rows = starts_with("par:"), pattern = parenthesis_pattern)
+      fmt_number(rows = starts_with("par:"),
+                 pattern = parenthesis_pattern,
+                 decimals = digits)
   }
 
   # remove "se:" stub labels
