@@ -67,7 +67,7 @@ if (require("gt")) {
            summary_stats = c("rsquared", "bic")) |>
     cols_label(model1 = "(1)", model2 = "(2)", model3 = "(3)") |>
     fmt_number(rows = c("Constant", "BIC"), decimals = 1) |>
-    tab_source_note(md("*Notes:* Standard errors shown in parenthesis. Reference for cylinders is a 4-cylinder engine.")) |>
+    tab_source_note(md("*Notes:* Standard errors shown in parenthesis.")) |>
     tab_options(table.width = "100\%")
 }
 }
