@@ -37,11 +37,11 @@
 #' @param digits a numeric value indicating the number of decimals to round results to
 #' @param sig_thresh a numeric value indicating the threshold for statistical significance
 #'             for the asterisk. If NULL, asterisks will not be printed.
+#' @param summary_stats a character vector indicating desired summary statistics. See below
+#'                for a list of available options.
 #' @param var_labels a named character vector indicating labels for the rows. Names should
 #'             either the actual variable names in the R model output for variables or
 #'             summary statistic names for summary statistics.
-#' @param summary_stats a character vector indicating desired summary statistics. See below
-#'                for a list of available options.
 #' @param beside A logical indicating whether to show the parenthetical value
 #'            on the same row (TRUE) or a separate row (FALSE; default).
 #'
@@ -75,8 +75,8 @@
 gt_model <- function(models,
                      digits = 3,
                      sig_thresh = 0.05,
+                     summary_stats = c("n"),
                      var_labels = c("(Intercept)" = "Intercept", "n" = "N"),
-                     summary_stats = NULL,
                      beside = FALSE) {
 
   #### Create Table Parts #####
