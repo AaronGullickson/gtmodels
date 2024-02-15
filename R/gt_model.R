@@ -75,7 +75,7 @@
 gt_model <- function(models,
                      digits = 3,
                      sig_thresh = 0.05,
-                     summary_stats = c("n"),
+                     summary_stats = NULL,
                      var_labels = c("(Intercept)" = "Intercept", "n" = "N"),
                      beside = FALSE) {
 
