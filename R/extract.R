@@ -1,5 +1,7 @@
 # variety of functions to extract data from model objects
 
+#### Variable specific information ####
+
 extract_se <- function(model) {
   summary(model)$coef[, 2]
 }
@@ -7,6 +9,8 @@ extract_se <- function(model) {
 extract_pvalue <- function(model) {
   summary(model)$coef[, 4]
 }
+
+#### Summary statistics ####
 
 extract_summary <- function(model, summary_stats = NULL) {
   # always include sample size
