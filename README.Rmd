@@ -103,6 +103,7 @@ gt_model(list(model1, model2, model3), summary_stats=c("rsquared","bic"),
          var_labels = name_corr) |>
   cols_label(model1 = "(1)", model2 = "(2)", model3 = "(3)") |>
   fmt_number(rows = c("Constant", "BIC"), decimals = 1) |>
+  tab_source_note(md("*Notes:* Standard errors shown in parenthesis."))
 ```
 
 ```{r example-gt, echo=FALSE}
