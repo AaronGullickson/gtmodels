@@ -11,6 +11,7 @@ gt_model(
   summary_stats = NULL,
   var_labels = c(`(Intercept)` = "Intercept", n = "N"),
   parenthetical_type = "se",
+  parenthesis_type = "regular",
   beside = FALSE
 )
 }
@@ -28,6 +29,9 @@ for a list of available options.}
 \item{var_labels}{a named character vector indicating labels for the rows. Names should
 either the actual variable names in the R model output for variables or
 summary statistic names for summary statistics.}
+
+\item{parenthesis_type}{A character string of either "regular", "square", or "curly" indicating
+the type of parenthesis to use for parenthetical values.}
 
 \item{beside}{A logical indicating whether to show the parenthetical value
 on the same row (TRUE) or a separate row (FALSE; default).}
@@ -64,8 +68,8 @@ can be renamed by the \code{var_labels} argument which takes a named character v
 provides the correspondence between original and new variable names (see examples below).
 
 All rows have a label prefix that can be used to identify sets of rows or particular rows.
-Each row label begins with either "coef:", "se:", or "summary:" depending on whether it is
-a model coefficient, standard error, or summary statistic. This is followed by either the
+Each row label begins with either "coef:", "par:", or "summary:" depending on whether it is
+a model coefficient, parenthetical value, or summary statistic. This is followed by either the
 name of the variable in R or the name of the summary statistic. These labels will still apply
 even if the \code{var_labels} argument has been used for different labeling in the printed table.
 User can use this to access specific rows or types of rows. For example, to change the

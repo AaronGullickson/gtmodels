@@ -21,8 +21,8 @@
 #' provides the correspondence between original and new variable names (see examples below).
 #'
 #' All rows have a label prefix that can be used to identify sets of rows or particular rows.
-#' Each row label begins with either "coef:", "se:", or "summary:" depending on whether it is
-#' a model coefficient, standard error, or summary statistic. This is followed by either the
+#' Each row label begins with either "coef:", "par:", or "summary:" depending on whether it is
+#' a model coefficient, parenthetical value, or summary statistic. This is followed by either the
 #' name of the variable in R or the name of the summary statistic. These labels will still apply
 #' even if the `var_labels` argument has been used for different labeling in the printed table.
 #' User can use this to access specific rows or types of rows. For example, to change the
@@ -44,6 +44,8 @@
 #'             summary statistic names for summary statistics.
 #' @param parenthetical_value A character string of either "se", "tstat", or "pvalue"
 #'             indicating what to include in parenthesis. Defaults to standard errors.
+#' @param parenthesis_type A character string of either "regular", "square", or "curly" indicating
+#'             the type of parenthesis to use for parenthetical values.
 #' @param beside A logical indicating whether to show the parenthetical value
 #'            on the same row (TRUE) or a separate row (FALSE; default).
 #'
@@ -80,6 +82,7 @@ gt_model <- function(models,
                      summary_stats = NULL,
                      var_labels = c("(Intercept)" = "Intercept", "n" = "N"),
                      parenthetical_type = "se",
+                     parenthesis_type = "regular",
                      beside = FALSE) {
 
   #### Create Table Parts #####
@@ -174,14 +177,22 @@ gt_model <- function(models,
     tab_options(footnotes.multiline = FALSE, footnotes.sep = ";")
 
   # wrap parenthetical values in parenthesis
+  parenthesis_pattern = "({x})"
+  if(parenthesis_type == "square") {
+    parenthesis_pattern <- "[{x}]"
+  } else if(parenthesis_type == "curly") {
+    parenthesis_pattern <- "{{x}}"
+  } else if(parenthesis_type != "regular") {
+    message("Parenthesis type not recognized. Defaulting to regular.")
+  }
   if(beside) {
     tbl_gt_model <- tbl_gt_model |>
       fmt_number(columns = ends_with("_par"),
                  rows = starts_with("coef:"),
-                 pattern = "({x})")
+                 pattern = parenthesis_pattern)
   } else {
     tbl_gt_model <- tbl_gt_model |>
-      fmt_number(rows = starts_with("par:"), pattern = "({x})")
+      fmt_number(rows = starts_with("par:"), pattern = parenthesis_pattern)
   }
 
   # remove "se:" stub labels
