@@ -80,9 +80,7 @@ gt_model <- function(models,
     dplyr::bind_rows()
 
   # get variable names for later
-  var_names <- factor(colnames(tbl_coef),
-    levels = colnames(tbl_coef)
-  )
+  var_names <- factor(colnames(tbl_coef), levels = colnames(tbl_coef))
   summary_names <- colnames(tbl_summary)
   m <- nrow(tbl_coef)
 
@@ -123,11 +121,9 @@ gt_model <- function(models,
 
   # remove parenthesis from intercept label
   tbl <- tbl |>
-    dplyr::mutate(variable = stringr::str_replace(
-      variable,
-      "\\(Intercept\\)",
-      "Intercept"
-    ))
+    dplyr::mutate(variable = stringr::str_replace(variable,
+                                                  "\\(Intercept\\)",
+                                                  "Intercept"))
 
   # if var_labels provided, rename all variables by labels
   if (!is.null(var_labels)) {
@@ -147,14 +143,12 @@ gt_model <- function(models,
     gt(rowname_col = "variable") |>
     fmt_number(dplyr::starts_with("model"), decimals = digits) |>
     fmt_number(dplyr::starts_with("model"),
-      rows = se_indx,
-      decimals = digits,
-      pattern = "({x})"
-    ) |>
+               rows = se_indx,
+               decimals = digits,
+               pattern = "({x})") |>
     fmt_number(dplyr::starts_with("model"),
-      rows = dplyr::matches("^N$"),
-      decimals = 0
-    ) |>
+               rows = dplyr::matches("^N$"),
+               decimals = 0) |>
     sub_missing(missing_text = "") |>
     opt_footnote_marks(marks = c("*", "**", "***")) |>
     tab_options(footnotes.multiline = FALSE, footnotes.sep = ";")
@@ -173,14 +167,10 @@ gt_model <- function(models,
     # loop through models and assign an asterisks
     for (j in 1:m) {
       gt_tbl <- gt_tbl |>
-        tab_footnote(
-          footnote = paste("p < ", sig_thresh, sep = ""),
-          locations = cells_body(
-            columns = j + 1,
-            rows = var_indx[which(is_sig[, j])]
-          ),
-          placement = "right"
-        )
+        tab_footnote(footnote = paste("p < ", sig_thresh, sep = ""),
+                     locations = cells_body(columns = j + 1,
+                                            rows = var_indx[which(is_sig[, j])]),
+                     placement = "right")
     }
   }
 
