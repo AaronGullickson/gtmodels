@@ -80,10 +80,11 @@ gt_model <- function(models,
                      digits = 3,
                      sig_thresh = 0.05,
                      summary_stats = NULL,
-                     var_labels = c("(Intercept)" = "Intercept", "n" = "N"),
+                     var_labels = c("n" = "N"),
                      parenthetical_type = "se",
                      parenthesis_type = "regular",
-                     beside = FALSE) {
+                     beside = FALSE,
+                     ) {
 
   #### Create Table Parts #####
 
@@ -165,7 +166,7 @@ gt_model <- function(models,
   tbl <- tbl |>
     dplyr::rename_with(~ gsub("V", "model", .x))
 
-  #### Construct gt table ####
+  #### Construct gt Table ####
 
   tbl_gt_model <- tbl |>
     gt(rowname_col = "variable") |>
