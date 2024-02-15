@@ -9,7 +9,8 @@ gt_model(
   digits = 3,
   sig_thresh = 0.05,
   var_labels = NULL,
-  summary_stats = NULL
+  summary_stats = NULL,
+  beside = FALSE
 )
 }
 \arguments{
@@ -25,6 +26,9 @@ be the actual row names and values should be the labels desired.}
 
 \item{summary_stats}{a character vector indicating desired summary statistics. See below
 for a list of available options.}
+
+\item{beside}{A logical indicating whether to show the parenthetical value
+on the same row (TRUE) or a separate row (FALSE; default).}
 }
 \value{
 \code{gt_model} returns a \code{gt_tbl} object that can be further processed using

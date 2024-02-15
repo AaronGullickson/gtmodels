@@ -29,6 +29,8 @@
 #'             be the actual row names and values should be the labels desired.
 #' @param summary_stats a character vector indicating desired summary statistics. See below
 #'                for a list of available options.
+#' @param beside A logical indicating whether to show the parenthetical value
+#'            on the same row (TRUE) or a separate row (FALSE; default).
 #'
 #' @return `gt_model` returns a `gt_tbl` object that can be further processed using
 #' various commands from the [gt] package.
@@ -61,7 +63,8 @@ gt_model <- function(models,
                      digits = 3,
                      sig_thresh = 0.05,
                      var_labels = NULL,
-                     summary_stats = NULL) {
+                     summary_stats = NULL,
+                     beside = FALSE) {
   #### Create Full Table #####
 
   # extract coefficients
@@ -93,21 +96,37 @@ gt_model <- function(models,
     transpose_tibble() |>
     dplyr::mutate(type = "se", variable = var_names)
 
-  tbl_combined <- dplyr::bind_rows(tbl_coef, tbl_se) |>
-    dplyr::arrange(variable, type) |>
-    dplyr::select(!type) |>
-    dplyr::select(variable, dplyr::everything())
 
-  tbl_summary <- tbl_summary |>
-    transpose_tibble() |>
-    dplyr::mutate(variable = summary_names) |>
-    dplyr::select(variable, dplyr::everything())
+  if(beside) {
+    tbl_combined <- dplyr::bind_rows(tbl_coef, tbl_se) |>
+      tidyr::pivot_wider(id_cols=variable,
+                         names_from=type,
+                         values_from=matches("^V[0-9]"))
 
-  # combine
-  tbl <- dplyr::bind_rows(tbl_combined, tbl_summary)
+    tbl_summary <- tbl_summary |>
+      transpose_tibble() |>
+      dplyr::mutate(variable = summary_names) |>
+      dplyr::select(variable, dplyr::everything()) |>
+      dplyr::rename_with(~ paste0(.x, "_se", sep=""), matches("^V[0-9]"))
+
+    tbl <- dplyr::bind_rows(tbl_combined, tbl_summary)
+  } else {
+    tbl_combined <- dplyr::bind_rows(tbl_coef, tbl_se) |>
+      dplyr::arrange(variable, type) |>
+      dplyr::select(!type) |>
+      dplyr::select(variable, dplyr::everything())
+
+    tbl_summary <- tbl_summary |>
+      transpose_tibble() |>
+      dplyr::mutate(variable = summary_names) |>
+      dplyr::select(variable, dplyr::everything())
+
+    tbl <- dplyr::bind_rows(tbl_combined, tbl_summary)
+  }
 
   # set indices for later reference
-  var_indx <- seq(from = 1, by = 2, length.out = length(var_names))
+  var_indx <- seq(from = 1, by = ifelse(beside, 1, 2),
+                  length.out = length(var_names))
   se_indx <- seq(from = 2, by = 2, length.out = length(var_names))
 
   #### Change Labels ####
@@ -117,7 +136,9 @@ gt_model <- function(models,
     dplyr::rename_with(~ gsub("V", "model", .x))
 
   # remove row labels on se lines
-  tbl$variable[se_indx] <- ""
+  if(!beside) {
+    tbl$variable[se_indx] <- ""
+  }
 
   # remove parenthesis from intercept label
   tbl <- tbl |>
@@ -141,17 +162,25 @@ gt_model <- function(models,
 
   gt_tbl <- tbl |>
     gt(rowname_col = "variable") |>
-    fmt_number(dplyr::starts_with("model"), decimals = digits) |>
-    fmt_number(dplyr::starts_with("model"),
-               rows = se_indx,
-               decimals = digits,
-               pattern = "({x})") |>
-    fmt_number(dplyr::starts_with("model"),
-               rows = dplyr::matches("^N$"),
+    fmt_number(decimals = digits) |>
+    fmt_number(rows = dplyr::matches("^N$"),
                decimals = 0) |>
     sub_missing(missing_text = "") |>
     opt_footnote_marks(marks = c("*", "**", "***")) |>
     tab_options(footnotes.multiline = FALSE, footnotes.sep = ";")
+
+  if(beside) {
+    gt_tbl <- gt_tbl |>
+      fmt_number(columns = ends_with("_se"),
+                 rows = var_indx,
+                 decimals = digits,
+                 pattern = "({x})")
+  } else {
+    gt_tbl <- gt_tbl |>
+      fmt_number(rows = se_indx,
+                 decimals = digits,
+                 pattern = "({x})")
+  }
 
   #### Add Asterisks ####
 
@@ -163,12 +192,13 @@ gt_model <- function(models,
       transpose_tibble()
 
     is_sig <- tbl_p < sig_thresh
+    multiplier <- ifelse(beside, 2, 1)
 
     # loop through models and assign an asterisks
     for (j in 1:m) {
       gt_tbl <- gt_tbl |>
         tab_footnote(footnote = paste("p < ", sig_thresh, sep = ""),
-                     locations = cells_body(columns = j + 1,
+                     locations = cells_body(columns = multiplier*j + 1,
                                             rows = var_indx[which(is_sig[, j])]),
                      placement = "right")
     }
