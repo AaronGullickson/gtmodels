@@ -13,7 +13,8 @@ gt_model(
   parenthetical_value = "se",
   parenthesis_type = "regular",
   beside = FALSE,
-  groups = NULL
+  groups = NULL,
+  omit_var = NULL
 )
 }
 \arguments{
@@ -43,6 +44,9 @@ on the same row (TRUE) or a separate row (FALSE; default).}
 \item{groups}{A character vector indicating the factor name for variables that
 should be grouped together under a heading row (e.g. for categorical
 variables).}
+
+\item{omit_var}{A character vector indicating variable names for variables that should
+be omitted from the final model.}
 }
 \value{
 \code{gt_model} returns a \code{gt_tbl} object that can be further processed using

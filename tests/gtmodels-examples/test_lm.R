@@ -23,7 +23,6 @@ gt_model(list(model1, model2, model3),
          groups=c("as.factor(cyl)")) |>
   cols_label(model1 = "(1)", model2 = "(2)", model3 = "(3)") |>
   fmt_number(rows = c("summary:bic"), decimals = 1) |>
-  tab_stub_indent(rows = matches("^coef:as.factor\\(cyl\\)"), indent = 3) |>
   tab_source_note(md("*Notes:* Standard errors shown in parenthesis.")) |>
   tab_options(table.width = "100%")
 

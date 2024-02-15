@@ -51,6 +51,8 @@
 #' @param groups A character vector indicating the factor name for variables that
 #'               should be grouped together under a heading row (e.g. for categorical
 #'               variables).
+#' @param omit_var A character vector indicating variable names for variables that should
+#'                 be omitted from the final model.
 #'
 #' @return `gt_model` returns a `gt_tbl` object that can be further processed using
 #' various commands from the [gt] package.
@@ -90,7 +92,8 @@ gt_model <- function(models,
                      parenthetical_value = "se",
                      parenthesis_type = "regular",
                      beside = FALSE,
-                     groups=NULL) {
+                     groups = NULL,
+                     omit_var = NULL) {
 
   #### Create Table Parts #####
 
@@ -171,6 +174,13 @@ gt_model <- function(models,
   # change call columns to "modelX"
   tbl <- tbl |>
     dplyr::rename_with(~ gsub("V", "model", .x))
+
+  # drop any omitted variables
+  for(x in omit_var) {
+    x <- paste("^(coef|par):", x, sep="")
+    tbl <- tbl |>
+      dplyr::filter(!stringr::str_detect(variable, x))
+  }
 
   #### Add groups ####
 
@@ -269,6 +279,11 @@ gt_model <- function(models,
     # loop through models and assign an asterisks
     for (i in 1:m) {
       sig_rows <- c(na.omit(var_id[is_sig[,i]]))
+      # check to make sure they have not been omitted
+      for(x in omit_var) {
+        x <- paste("^coef:", x, sep="")
+        sig_rows <- sig_rows[!stringr::str_detect(sig_rows, x)]
+      }
       tbl_gt_model <- tbl_gt_model |>
         tab_footnote(footnote = sig_label,
                      locations = cells_body(columns = multiplier*i + 1,
