@@ -2,7 +2,7 @@
 % Please edit documentation in R/gt_model.R
 \name{gt_model}
 \alias{gt_model}
-\title{Generate a gt table from model results.}
+\title{Generates a table from model results using the \code{gt} library.}
 \usage{
 gt_model(
   models,
@@ -28,20 +28,25 @@ for a list of available options.}
 }
 \value{
 \code{gt_model} returns a \code{gt_tbl} object that can be further processed using
-various commands from the \code{gt} package.
+various commands from the \link{gt} package.
 }
 \description{
-\code{gt_model} outputs a list of models as a \code{gt_tbl} for
-display in Quarto, R Markdown, or other formats.
+\code{gt_model} outputs a list of models as a \link{gt} table for display in Quarto,
+R Markdown, or other formats.
 }
 \details{
-This function can be used to create a \code{gt_tbl} table of model (i.e. regression) results
+This function can be used to create a \link{gt} table of model (i.e. regression) results
 using a format common in many scientific fields. Multiple models can be included in the table
 by feeding in a list of model objects. The most common intended use of this function is within
+a Quarto document where the output will be displayed nicely in the final output.
 Currently the following models are verified to work:
+\itemize{
+\item \link{lm}
+\item \link{glm}
+}
 
 Because the returned object is a \code{gt_tbl}, it can be further refined to the user's
-tastes by piping it into subsequent \code{gt} commands.
+tastes by piping it into subsequent \link{gt} commands.
 
 The returned table uses a label row for the variable label and summary statistics labels. All
 Users can rename the models with a \code{cols_label} command. Variables and summary statistics

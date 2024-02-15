@@ -1,9 +1,27 @@
-#' Generate a gt table from model results.
+#' Generates a table from model results using the `gt` library.
 #'
-#' @description \code{gt_model} outputs a list of models as a \code{gt_tbl} for
-#' display in Quarto, R Markdown, or other formats.
+#' `gt_model` outputs a list of models as a [gt] table for display in Quarto,
+#' R Markdown, or other formats.
 #'
-#' @param models a \code{list} of models, of either the \code{lm} or \code{glm} command.
+#' This function can be used to create a [gt] table of model (i.e. regression) results
+#' using a format common in many scientific fields. Multiple models can be included in the table
+#' by feeding in a list of model objects. The most common intended use of this function is within
+#' a Quarto document where the output will be displayed nicely in the final output.
+#' Currently the following models are verified to work:
+#' * [lm]
+#' * [glm]
+#'
+#' Because the returned object is a `gt_tbl`, it can be further refined to the user's
+#' tastes by piping it into subsequent [gt] commands.
+#'
+#' The returned table uses a label row for the variable label and summary statistics labels. All
+# " model columns will be named as `modelX` where X is the index of the model (e.g. model1, model2).
+#' Users can rename the models with a `cols_label` command. Variables and summary statistics
+#' can be renamed by the `var_labels` argument which takes a named character vector that
+#' provides the correspondence between original and new variable names (see examples below).
+#'
+#'
+#' @param models a `list` of models, of either the `lm` or `glm` command.
 #' @param digits a numeric value indicating the number of decimals to round results to
 #' @param sig_thresh a numeric value indicating the threshold for statistical significance
 #'             for the asterisk. If NULL, asterisks will not be printed.
@@ -11,24 +29,9 @@
 #'             be the actual row names and values should be the labels desired.
 #' @param summary_stats a character vector indicating desired summary statistics. See below
 #'                for a list of available options.
-#' @details
-#' This function can be used to create a \code{gt_tbl} table of model (i.e. regression) results
-#' using a format common in many scientific fields. Multiple models can be included in the table
-#' by feeding in a list of model objects. The most common intended use of this function is within
-# ` a Quarto document where the output will be displayed nicely in the final output.
-#' Currently the following models are verified to work:
 #'
-#' Because the returned object is a \code{gt_tbl}, it can be further refined to the user's
-#' tastes by piping it into subsequent \code{gt} commands.
-#'
-#' The returned table uses a label row for the variable label and summary statistics labels. All
-# " model columns will be named as \code{modelX} where X is the index of the model (e.g. model1, model2).
-#' Users can rename the models with a \code{cols_label} command. Variables and summary statistics
-#' can be renamed by the \code{var_labels} argument which takes a named character vector that
-#' provides the correspondence between original and new variable names (see examples below).
-#'
-#' @return \code{gt_model} returns a \code{gt_tbl} object that can be further processed using
-#' various commands from the \code{gt} package.
+#' @return `gt_model` returns a `gt_tbl` object that can be further processed using
+#' various commands from the [gt] package.
 #'
 #' @examples
 #' if (require("gt")) {
@@ -184,6 +187,7 @@ gt_model <- function(models,
   return(gt_tbl)
 }
 
+# helper function to transpose a tibble
 transpose_tibble <- function(x) {
   x |>
     t() |>
