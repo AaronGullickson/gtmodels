@@ -18,7 +18,7 @@ knitr::opts_chunk$set(
 <!-- badges: start -->
 <!-- badges: end -->
 
-The `gtmodels` package allows you to output multiple models as a single `gt_tbl` table using the [gt](https://gt.rstudio.com/) package. This output can easily be embedded in R Markdown and Quarto documents. Furthermore, because the output is a `gt_tbl` object, it can easily be customized further by the user using standard `gt` commands. 
+The `gtmodels` R package allows you to output multiple models as a single `gt_tbl` table using the [gt](https://gt.rstudio.com/) package. This output can easily be embedded in R Markdown and Quarto documents. Furthermore, because the output is a `gt_tbl` object, it can easily be customized further by the user using standard `gt` commands. 
 
 ## Installation
 
@@ -33,83 +33,37 @@ devtools::install_github("AaronGullickson/gtmodels")
 
 This is a basic example which shows you how to build a table containing several models:
 
-```r
+```{r example, results='hide'}
 library(gt)
 library(gtmodels)
+
+# build some models
 model1 <- lm(mpg ~ hp, data = mtcars)
 model2 <- update(model1, . ~ . + disp + wt)
 model3 <- update(model2, . ~ . + as.factor(cyl))
 
-gt_model(list(model1, model2, model3))
-```
-
-```{r example-intro, echo=FALSE}
-library(gt)
-library(gtmodels)
-model1 <- lm(mpg ~ hp, data = mtcars)
-model2 <- update(model1, . ~ . + disp + wt)
-model3 <- update(model2, . ~ . + as.factor(cyl))
-
-as_raw_html(gt_model(list(model1, model2, model3)))
-```
-
-Right now, the table doesn't look like much but I can make some quick and easy changes using additional arguments in `gt_model`. First, I can add some predefined summary statistics:
-
-```r
-gt_model(list(model1, model2, model3), summary_stats=c("rsquared","bic"))
-```
-
-```{r example-summary-stats, echo=FALSE}
-as_raw_html(gt_model(list(model1, model2, model3), 
-                     summary_stats=c("rsquared","bic")))
-```
-
-Now lets change the variable labels by creating a named vector that gives us the correspondence between old and new names.
-
-```r
-# create a named vector or labels for the variable names
-name_corr <- c("Intercept" = "Constant",
+# create a name correspondence for final row labels
+name_corr <- c("(Intercept)" = "Constant",
                "hp" = "Horsepower",
                "disp" = "Displacement (cu. in.)",
                "wt" = "Weight (1000 lbs)",
-               "as.factor\\(cyl\\)6" = "6-cylinder",
-               "as.factor\\(cyl\\)8" = "8-cylinder",
+               "as.factor(cyl)6" = "6-cylinder",
+               "as.factor(cyl)8" = "8-cylinder",
+               "n" = "N",
                "rsquared" = "R-squared",
                "bic" = "BIC")
 
-gt_model(list(model1, model2, model3), summary_stats=c("rsquared","bic"),
-         var_labels = name_corr)
-```
-
-```{r example-var-labels, echo=FALSE}
-# create a named vector or labels for the variable names
-name_corr <- c("Intercept" = "Constant",
-               "hp" = "Horsepower",
-               "disp" = "Displacement (cu. in.)",
-               "wt" = "Weight (1000 lbs)",
-               "as.factor\\(cyl\\)6" = "6-cylinder",
-               "as.factor\\(cyl\\)8" = "8-cylinder",
-               "rsquared" = "R-squared",
-               "bic" = "BIC")
-
-as_raw_html(gt_model(list(model1, model2, model3), summary_stats=c("rsquared","bic"),
-         var_labels = name_corr))
-```
-
-I have taken this about as far as I want with the basic command, but now I can process it further by just piping it into subsequent `gt` commands:
-
-```r
-gt_model(list(model1, model2, model3), summary_stats=c("rsquared","bic"),
+tbl <- gt_model(list(model1, model2, model3),
+         summary_stats=c("rsquared","bic"),
          var_labels = name_corr) |>
   cols_label(model1 = "(1)", model2 = "(2)", model3 = "(3)") |>
-  fmt_number(rows = c("Constant", "BIC"), decimals = 1) |>
+  fmt_number(rows = c("summary:bic"), decimals = 1) |>
   tab_source_note(md("*Notes:* Standard errors shown in parenthesis."))
+
+tbl
 ```
 
-```{r example-gt, echo=FALSE}
-as_raw_html(gt_model(list(model1, model2, model3), summary_stats=c("rsquared","bic"),
-         var_labels = name_corr) |>
-  cols_label(model1 = "(1)", model2 = "(2)", model3 = "(3)") |>
-  fmt_number(rows = c("Constant", "BIC"), decimals = 1) |>
-  tab_source_note(md("*Notes:* Standard errors shown in parenthesis.")))
+```{r raw-html, echo=FALSE}
+as_raw_html(tbl)
 ```
+

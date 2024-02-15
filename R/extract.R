@@ -15,7 +15,7 @@ extract_pvalue <- function(model) {
 extract_summary <- function(model, summary_stats = NULL) {
   # always include sample size
   n <- length(model$residuals)
-  sum_stats <- c("N" = n)
+  sum_stats <- c("n" = n)
 
   if ("rsquared" %in% summary_stats) {
     sum_stats <- c(sum_stats, "rsquared" = extract_rsquared(model))

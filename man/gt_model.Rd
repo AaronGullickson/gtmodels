@@ -8,7 +8,7 @@ gt_model(
   models,
   digits = 3,
   sig_thresh = 0.05,
-  var_labels = NULL,
+  var_labels = c(`(Intercept)` = "Intercept", n = "N"),
   summary_stats = NULL,
   beside = FALSE
 )
@@ -52,10 +52,23 @@ Currently the following models are verified to work:
 Because the returned object is a \code{gt_tbl}, it can be further refined to the user's
 tastes by piping it into subsequent \link{gt} commands.
 
-The returned table uses a label row for the variable label and summary statistics labels. All
+The returned table uses a "stub" column for the variable label and summary statistics labels. All
+model columns will be named as \code{modelX} where X is the index of the model (e.g. model1, model2).
 Users can rename the models with a \code{cols_label} command. Variables and summary statistics
 can be renamed by the \code{var_labels} argument which takes a named character vector that
 provides the correspondence between original and new variable names (see examples below).
+
+All rows have a label prefix that can be used to identify sets of rows or particular rows.
+Each row label begins with either "coef:", "se:", or "summary:" depending on whether it is
+a model coefficient, standard error, or summary statistic. This is followed by either the
+name of the variable in R or the name of the summary statistic. These labels will still apply
+even if the \code{var_labels} argument has been used for different labeling in the printed table.
+User can use this to access specific rows or types of rows. For example, to change the
+rounding on all coefficient values:
+
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{ gt_model(...) |>
+   fmt_number(rows=matches("^coef:"), decimals=5)
+}\if{html}{\out{</div>}}
 }
 \examples{
 if (require("gt")) {
@@ -75,7 +88,7 @@ if (require("gt")) {
   gt_model(list(model1, model2, model3), var_labels = name_corr,
            summary_stats = c("rsquared", "bic")) |>
     cols_label(model1 = "(1)", model2 = "(2)", model3 = "(3)") |>
-    fmt_number(rows = c("Constant", "BIC"), decimals = 1) |>
+    fmt_number(rows = c("summary:bic"), decimals = 1) |>
     tab_source_note(md("*Notes:* Standard errors shown in parenthesis.")) |>
     tab_options(table.width = "100\%")
 }

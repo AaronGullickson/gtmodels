@@ -14,19 +14,32 @@
 #' Because the returned object is a `gt_tbl`, it can be further refined to the user's
 #' tastes by piping it into subsequent [gt] commands.
 #'
-#' The returned table uses a label row for the variable label and summary statistics labels. All
-# " model columns will be named as `modelX` where X is the index of the model (e.g. model1, model2).
+#' The returned table uses a "stub" column for the variable and summary statistics labels. All
+#' model columns will be named as `modelX` where X is the index of the model (e.g. model1, model2).
 #' Users can rename the models with a `cols_label` command. Variables and summary statistics
 #' can be renamed by the `var_labels` argument which takes a named character vector that
 #' provides the correspondence between original and new variable names (see examples below).
 #'
+#' All rows have a label prefix that can be used to identify sets of rows or particular rows.
+#' Each row label begins with either "coef:", "se:", or "summary:" depending on whether it is
+#' a model coefficient, standard error, or summary statistic. This is followed by either the
+#' name of the variable in R or the name of the summary statistic. These labels will still apply
+#' even if the `var_labels` argument has been used for different labeling in the printed table.
+#' User can use this to access specific rows or types of rows. For example, to change the
+#' rounding on all coefficient values:
+#'
+#' ```r
+#'  gt_model(...) |>
+#'    fmt_number(rows=matches("^coef:"), decimals=5)
+#' ```
 #'
 #' @param models a `list` of models, of either the `lm` or `glm` command.
 #' @param digits a numeric value indicating the number of decimals to round results to
 #' @param sig_thresh a numeric value indicating the threshold for statistical significance
 #'             for the asterisk. If NULL, asterisks will not be printed.
 #' @param var_labels a named character vector indicating labels for the rows. Names should
-#'             be the actual row names and values should be the labels desired.
+#'             either the actual variable names in the R model output for variables or
+#'             summary statistic names for summary statistics.
 #' @param summary_stats a character vector indicating desired summary statistics. See below
 #'                for a list of available options.
 #' @param beside A logical indicating whether to show the parenthetical value
@@ -45,15 +58,15 @@
 #'                  "hp" = "Horsepower",
 #'                  "disp" = "Displacement (cu. in.)",
 #'                  "wt" = "Weight (1000 lbs)",
-#'                  "as.factor\\(cyl\\)6" = "6-cylinder",
-#'                  "as.factor\\(cyl\\)8" = "8-cylinder",
+#'                  "as.factor(cyl)6" = "6-cylinder",
+#'                  "as.factor(cyl)8" = "8-cylinder",
 #'                  "rsquared" = "R-squared",
 #'                  "bic" = "BIC")
 #'
 #'   gt_model(list(model1, model2, model3), var_labels = name_corr,
 #'            summary_stats = c("rsquared", "bic")) |>
 #'     cols_label(model1 = "(1)", model2 = "(2)", model3 = "(3)") |>
-#'     fmt_number(rows = c("Constant", "BIC"), decimals = 1) |>
+#'     fmt_number(rows = c("summary:bic"), decimals = 1) |>
 #'     tab_source_note(md("*Notes:* Standard errors shown in parenthesis.")) |>
 #'     tab_options(table.width = "100%")
 #' }
@@ -62,10 +75,11 @@
 gt_model <- function(models,
                      digits = 3,
                      sig_thresh = 0.05,
-                     var_labels = NULL,
+                     var_labels = c("(Intercept)" = "Intercept", "n" = "N"),
                      summary_stats = NULL,
                      beside = FALSE) {
-  #### Create Full Table #####
+
+  #### Create Table Parts #####
 
   # extract coefficients
   tbl_coef <- models |>
@@ -96,16 +110,18 @@ gt_model <- function(models,
     transpose_tibble() |>
     dplyr::mutate(type = "se", variable = var_names)
 
+  #### Construct Full Table ####
 
   if(beside) {
     tbl_combined <- dplyr::bind_rows(tbl_coef, tbl_se) |>
       tidyr::pivot_wider(id_cols=variable,
                          names_from=type,
-                         values_from=matches("^V[0-9]"))
+                         values_from=matches("^V[0-9]")) |>
+      dplyr::mutate(variable = paste("coef", variable, sep=":"))
 
     tbl_summary <- tbl_summary |>
       transpose_tibble() |>
-      dplyr::mutate(variable = summary_names) |>
+      dplyr::mutate(variable = paste("summary", summary_names, sep=":")) |>
       dplyr::select(variable, dplyr::everything()) |>
       dplyr::rename_with(~ paste0(.x, "_se", sep=""), matches("^V[0-9]"))
 
@@ -113,73 +129,70 @@ gt_model <- function(models,
   } else {
     tbl_combined <- dplyr::bind_rows(tbl_coef, tbl_se) |>
       dplyr::arrange(variable, type) |>
+      dplyr::mutate(variable = paste(type, variable, sep=":")) |>
       dplyr::select(!type) |>
       dplyr::select(variable, dplyr::everything())
 
     tbl_summary <- tbl_summary |>
       transpose_tibble() |>
-      dplyr::mutate(variable = summary_names) |>
+      dplyr::mutate(variable = paste("summary", summary_names, sep=":")) |>
       dplyr::select(variable, dplyr::everything())
 
     tbl <- dplyr::bind_rows(tbl_combined, tbl_summary)
   }
 
-  # set indices for later reference
-  var_indx <- seq(from = 1, by = ifelse(beside, 1, 2),
-                  length.out = length(var_names))
-  se_indx <- seq(from = 2, by = 2, length.out = length(var_names))
-
-  #### Change Labels ####
-
   # change call columns to "modelX"
   tbl <- tbl |>
     dplyr::rename_with(~ gsub("V", "model", .x))
 
-  # remove row labels on se lines
-  if(!beside) {
-    tbl$variable[se_indx] <- ""
-  }
-
-  # remove parenthesis from intercept label
-  tbl <- tbl |>
-    dplyr::mutate(variable = stringr::str_replace(variable,
-                                                  "\\(Intercept\\)",
-                                                  "Intercept"))
-
   # if var_labels provided, rename all variables by labels
-  if (!is.null(var_labels)) {
-    for (vname in names(var_labels)) {
-      tbl <- tbl |>
-        dplyr::mutate(variable = stringr::str_replace(
-          variable,
-          paste("^", vname, "$", sep = ""),
-          as.character(var_labels[vname])
-        ))
-    }
-  }
+  # if (!is.null(var_labels)) {
+  #   for (vname in names(var_labels)) {
+  #     tbl <- tbl |>
+  #       dplyr::mutate(variable = stringr::str_replace(
+  #         variable,
+  #         paste("^", vname, "$", sep = ""),
+  #         as.character(var_labels[vname])
+  #       ))
+  #   }
+  # }
 
-  #### Construct basic gt table
+  #### Construct gt table ####
 
-  gt_tbl <- tbl |>
+  tbl_gt_model <- tbl |>
     gt(rowname_col = "variable") |>
     fmt_number(decimals = digits) |>
-    fmt_number(rows = dplyr::matches("^N$"),
-               decimals = 0) |>
+    fmt_number(decimals = 0, rows = "summary:n") |>
     sub_missing(missing_text = "") |>
     opt_footnote_marks(marks = c("*", "**", "***")) |>
     tab_options(footnotes.multiline = FALSE, footnotes.sep = ";")
 
+  # wrap parenthetical values in parenthesis
   if(beside) {
-    gt_tbl <- gt_tbl |>
+    tbl_gt_model <- tbl_gt_model |>
       fmt_number(columns = ends_with("_se"),
-                 rows = var_indx,
-                 decimals = digits,
+                 rows = starts_with("coef:"),
                  pattern = "({x})")
   } else {
-    gt_tbl <- gt_tbl |>
-      fmt_number(rows = se_indx,
-                 decimals = digits,
-                 pattern = "({x})")
+    tbl_gt_model <- tbl_gt_model |>
+      fmt_number(rows = starts_with("se:"), pattern = "({x})")
+  }
+
+  # remove "se:" stub labels
+  tbl_gt_model <- tbl_gt_model |>
+    text_replace(".*", "", locations = cells_stub(rows = matches("^se:")))
+
+  # replace variable labels
+  if(!is.null(var_labels)) {
+    tbl_gt_model <- tbl_gt_model |>
+      text_transform(
+        fn = function(x) {
+          replacement <- var_labels[stringr::str_remove(x, "^(coef|summary):")]
+          replacement[which(is.na(replacement))] <- x[which(is.na(replacement))]
+          return(replacement)
+        },
+        locations = cells_stub(rows = matches("^(coef|summary):"))
+      )
   }
 
   #### Add Asterisks ####
@@ -193,18 +206,21 @@ gt_model <- function(models,
 
     is_sig <- tbl_p < sig_thresh
     multiplier <- ifelse(beside, 2, 1)
+    var_id <- paste(tbl_coef$type, tbl_coef$variable, sep=":")
+    sig_label <- paste("p < ", sig_thresh, sep = "")
 
     # loop through models and assign an asterisks
-    for (j in 1:m) {
-      gt_tbl <- gt_tbl |>
-        tab_footnote(footnote = paste("p < ", sig_thresh, sep = ""),
-                     locations = cells_body(columns = multiplier*j + 1,
-                                            rows = var_indx[which(is_sig[, j])]),
+    for (i in 1:m) {
+      sig_rows <- c(na.omit(var_id[is_sig[,i]]))
+      tbl_gt_model <- tbl_gt_model |>
+        tab_footnote(footnote = sig_label,
+                     locations = cells_body(columns = multiplier*i + 1,
+                                            rows = sig_rows),
                      placement = "right")
     }
   }
 
-  return(gt_tbl)
+  return(tbl_gt_model)
 }
 
 # helper function to transpose a tibble
