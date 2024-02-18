@@ -2,6 +2,9 @@ library(gt)
 library(gtmodels)
 library(palmerpenguins)
 library(margins)
+library(lmtest)
+library(sandwich)
+library(AER)
 
 # lm ----------------------------------------------------------------------
 
@@ -65,6 +68,7 @@ gt_model(list(model1, model2, model3),
          omit_var = "island",
          summary_stats = c("loglik", "deviance", "pseudo_rsquared"),
          groups = "species") |>
+  cols_label(model1 = "(1)", model2 = "(2)", model3 = "(3)") |>
   fmt_number(rows = c("summary:loglik", "summary:deviance"), decimals = 1) |>
   tab_source_note(md("*Notes:* Standard errors shown in parenthesis. All models include island fixed effects"))
 
@@ -77,5 +81,36 @@ gt_model(lapply(list(model1, model2, model3), margins),
          var_labels = name_corr,
          omit_var = "island",
          groups = "species") |>
+  cols_label(model1 = "(1)", model2 = "(2)", model3 = "(3)") |>
   tab_source_note(md("*Notes:* Standard errors shown in parenthesis. All models include island fixed effects"))
+
+
+# lmtest ------------------------------------------------------------------
+
+data(Affairs, package = 'AER')
+
+model1 <- glm(affairs~I(age-40)+I((age-40)^2)+gender, data=Affairs,
+              family=poisson)
+model2 <- update(model1, .~.+yearsmarried+children)
+model3 <- update(model2, .~.+religiousness)
+
+name_corr <- c("(Intercept)" = "Intercept",
+               "I(age - 40)" = "Age (centered 40)",
+               "I((age - 40)^2)" = "Age squared",
+               "gendermale" = "Male",
+               "yearsmarried" = "Years married",
+               "childrenyes" = "Have children",
+               "religiousness" = "Religiousness",
+               "n" = "N")
+
+gt_model(list(model1, model2, model3),
+         var_labels = name_corr) |>
+  cols_label(model1 = "(1)", model2 = "(2)", model3 = "(3)") |>
+  tab_source_note(md("*Notes:* Standard errors shown in parenthesis."))
+
+gt_model(lapply(list(model1, model2, model3),
+                function(model){coeftest(model, vcov = vcovHC(model, "HC1"))}),
+         var_labels = name_corr) |>
+  cols_label(model1 = "(1)", model2 = "(2)", model3 = "(3)") |>
+  tab_source_note(md("*Notes:* Robust standard errors shown in parenthesis."))
 

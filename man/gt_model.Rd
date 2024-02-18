@@ -66,7 +66,11 @@ Currently the following models are verified to work:
 \item \link{lm}
 \item \link{glm}
 \item margins
+\item lmtest
 }
+
+Note that available summary statistics will vary by model type. Users can use \code{gt::rows_add}
+to add additional summary statistics rows to the table manually.
 
 Because the returned object is a \code{gt_tbl}, it can be further refined to the user's
 tastes by piping it into subsequent \link{gt} commands.

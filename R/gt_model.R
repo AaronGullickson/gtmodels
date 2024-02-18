@@ -11,6 +11,10 @@
 #' * [lm]
 #' * [glm]
 #' * margins
+#' * lmtest
+#'
+#' Note that available summary statistics will vary by model type. Users can use `gt::rows_add`
+#' to add additional summary statistics rows to the table manually.
 #'
 #' Because the returned object is a `gt_tbl`, it can be further refined to the user's
 #' tastes by piping it into subsequent [gt] commands.

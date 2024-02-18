@@ -3,7 +3,9 @@
 #### Variable specific information ####
 
 extract_coef <- function(model) {
-  if("margins" %in% class(model)) {
+  if("coeftest" %in% class(model)) {
+    return(coef(model))
+  } else if("margins" %in% class(model)) {
     x <- summary(model)$AME
     names(x) <- summary(model)$factor
     return(x)
@@ -14,7 +16,9 @@ extract_coef <- function(model) {
 }
 
 extract_se <- function(model) {
-  if("margins" %in% class(model)) {
+  if("coeftest" %in% class(model)) {
+    return(model[,2])
+  } else if("margins" %in% class(model)) {
     x <- summary(model)$SE
     names(x) <- summary(model)$factor
     return(x)
@@ -25,7 +29,9 @@ extract_se <- function(model) {
 }
 
 extract_tstat <- function(model) {
-  if("margins" %in% class(model)) {
+  if("coeftest" %in% class(model)) {
+    return(model[,3])
+  } else if("margins" %in% class(model)) {
     x <- summary(model)$z
     names(x) <- summary(model)$factor
     return(x)
@@ -36,7 +42,9 @@ extract_tstat <- function(model) {
 }
 
 extract_pvalue <- function(model) {
-  if("margins" %in% class(model)) {
+  if("coeftest" %in% class(model)) {
+    return(model[,4])
+  } else if("margins" %in% class(model)) {
     x <- summary(model)$p
     names(x) <- summary(model)$factor
     return(x)
@@ -50,7 +58,9 @@ extract_pvalue <- function(model) {
 
 extract_summary <- function(model, summary_stats = NULL) {
   # always include sample size
-  if("margins" %in% class(model)) {
+  if("coeftest" %in% class(model)) {
+    n <- attributes(model)$nobs
+  } else if("margins" %in% class(model)) {
     n <- length(na.omit(model$fitted))
   } else {
     n <- length(model$residuals)
