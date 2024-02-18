@@ -65,6 +65,7 @@ Currently the following models are verified to work:
 \itemize{
 \item \link{lm}
 \item \link{glm}
+\item margins
 }
 
 Because the returned object is a \code{gt_tbl}, it can be further refined to the user's

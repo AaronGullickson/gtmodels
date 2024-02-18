@@ -1,6 +1,7 @@
 library(gt)
 library(gtmodels)
 library(palmerpenguins)
+library(margins)
 
 # lm ----------------------------------------------------------------------
 
@@ -62,7 +63,19 @@ name_corr <- c("(Intercept)" = "Intercept",
 gt_model(list(model1, model2, model3),
          var_labels = name_corr,
          omit_var = "island",
-         summary_stats = c("loglik", "deviance", "pseudo_rsquared")) |>
+         summary_stats = c("loglik", "deviance", "pseudo_rsquared"),
+         groups = "species") |>
   fmt_number(rows = c("summary:loglik", "summary:deviance"), decimals = 1) |>
+  tab_source_note(md("*Notes:* Standard errors shown in parenthesis. All models include island fixed effects"))
+
+
+# margins -----------------------------------------------------------------
+
+models <- lapply(list(model1, model2, model3), margins)
+
+gt_model(lapply(list(model1, model2, model3), margins),
+         var_labels = name_corr,
+         omit_var = "island",
+         groups = "species") |>
   tab_source_note(md("*Notes:* Standard errors shown in parenthesis. All models include island fixed effects"))
 

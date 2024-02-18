@@ -10,6 +10,7 @@
 #' Currently the following models are verified to work:
 #' * [lm]
 #' * [glm]
+#' * margins
 #'
 #' Because the returned object is a `gt_tbl`, it can be further refined to the user's
 #' tastes by piping it into subsequent [gt] commands.
@@ -99,7 +100,7 @@ gt_model <- function(models,
 
   # extract coefficients
   tbl_coef <- models |>
-    purrr::map(coef) |>
+    purrr::map(extract_coef) |>
     dplyr::bind_rows()
 
   # extract parenthetical values
@@ -114,7 +115,7 @@ gt_model <- function(models,
   } else {
     # default to standard errors
     if(parenthetical_value != "se") {
-      message("argument to parenthetical type not recognized. Defaulting to standard errors")
+      message("argument to parenthetical value not recognized. Defaulting to standard errors")
     }
     tbl_par <- models |>
       purrr::map(extract_se) |>

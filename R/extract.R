@@ -2,23 +2,59 @@
 
 #### Variable specific information ####
 
+extract_coef <- function(model) {
+  if("margins" %in% class(model)) {
+    x <- summary(model)$AME
+    names(x) <- summary(model)$factor
+    return(x)
+  } else {
+    # we default to lm
+    return(coef(model))
+  }
+}
+
 extract_se <- function(model) {
-  summary(model)$coef[, 2]
+  if("margins" %in% class(model)) {
+    x <- summary(model)$SE
+    names(x) <- summary(model)$factor
+    return(x)
+  } else {
+    # we default to lm
+    return(summary(model)$coef[, 2])
+  }
 }
 
 extract_tstat <- function(model) {
-  summary(model)$coef[, 3]
+  if("margins" %in% class(model)) {
+    x <- summary(model)$z
+    names(x) <- summary(model)$factor
+    return(x)
+  } else {
+    # we default to lm
+    return(summary(model)$coef[, 3])
+  }
 }
 
 extract_pvalue <- function(model) {
-  summary(model)$coef[, 4]
+  if("margins" %in% class(model)) {
+    x <- summary(model)$p
+    names(x) <- summary(model)$factor
+    return(x)
+  } else {
+    # we default to lm
+    return(summary(model)$coef[, 4])
+  }
 }
 
 #### Summary statistics ####
 
 extract_summary <- function(model, summary_stats = NULL) {
   # always include sample size
-  n <- length(model$residuals)
+  if("margins" %in% class(model)) {
+    n <- length(na.omit(model$fitted))
+  } else {
+    n <- length(model$residuals)
+  }
   sum_stats <- c("n" = n)
 
   if ("rsquared" %in% summary_stats) {
