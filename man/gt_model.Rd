@@ -14,7 +14,8 @@ gt_model(
   parenthesis_type = "regular",
   beside = FALSE,
   groups = NULL,
-  omit_var = NULL
+  omit_var = NULL,
+  exponentiate = FALSE
 )
 }
 \arguments{
@@ -47,6 +48,11 @@ variables).}
 
 \item{omit_var}{A character vector indicating variable names for variables that should
 be omitted from the final model.}
+
+\item{exponentiate}{A boolean value indicating whether the coefficients from the model
+should be exponentiated (taken to the power of e). This may be
+useful for some models that use a log transformation of the
+dependent variable.}
 }
 \value{
 \code{gt_model} returns a \code{gt_tbl} object that can be further processed using

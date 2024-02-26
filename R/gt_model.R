@@ -58,6 +58,10 @@
 #'               variables).
 #' @param omit_var A character vector indicating variable names for variables that should
 #'                 be omitted from the final model.
+#' @param exponentiate A boolean value indicating whether the coefficients from the model
+#'                     should be exponentiated (taken to the power of e). This may be
+#'                     useful for some models that use a log transformation of the
+#'                     dependent variable.
 #'
 #' @return `gt_model` returns a `gt_tbl` object that can be further processed using
 #' various commands from the [gt] package.
@@ -98,7 +102,8 @@ gt_model <- function(models,
                      parenthesis_type = "regular",
                      beside = FALSE,
                      groups = NULL,
-                     omit_var = NULL) {
+                     omit_var = NULL,
+                     exponentiate = FALSE) {
 
   #### Create Table Parts #####
 
@@ -106,6 +111,10 @@ gt_model <- function(models,
   tbl_coef <- models |>
     purrr::map(extract_coef) |>
     dplyr::bind_rows()
+
+  if(exponentiate) {
+    tbl_coef <- exp(tbl_coef)
+  }
 
   # extract parenthetical values
   if(parenthetical_value == "tstat") {

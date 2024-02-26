@@ -73,6 +73,19 @@ gt_model(list(model1, model2, model3),
   tab_source_note(md("*Notes:* Standard errors shown in parenthesis. All models include island fixed effects"))
 
 
+# try exponentiating results
+gt_model(list(model1, model2, model3),
+         exponentiate = TRUE,
+         digits = 4,
+         var_labels = name_corr,
+         omit_var = "island",
+         summary_stats = c("loglik", "deviance", "pseudo_rsquared"),
+         groups = "species") |>
+  cols_label(model1 = "(1)", model2 = "(2)", model3 = "(3)") |>
+  fmt_number(rows = c("summary:loglik", "summary:deviance"), decimals = 1) |>
+  tab_source_note(md("*Notes:* Standard errors shown in parenthesis. All models include island fixed effects"))
+
+
 # margins -----------------------------------------------------------------
 
 models <- lapply(list(model1, model2, model3), margins)
