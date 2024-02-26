@@ -12,6 +12,7 @@
 #' * [glm]
 #' * margins
 #' * lmtest
+#' * svyglm from survey package
 #'
 #' Note that available summary statistics will vary by model type. Users can use `gt::rows_add`
 #' to add additional summary statistics rows to the table manually.

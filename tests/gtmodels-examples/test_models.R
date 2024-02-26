@@ -5,6 +5,7 @@ library(margins)
 library(lmtest)
 library(sandwich)
 library(AER)
+library(survey)
 
 # lm ----------------------------------------------------------------------
 
@@ -127,3 +128,13 @@ gt_model(lapply(list(model1, model2, model3),
   cols_label(model1 = "(1)", model2 = "(2)", model3 = "(3)") |>
   tab_source_note(md("*Notes:* Robust standard errors shown in parenthesis."))
 
+# svyglm -----------------------------------------------------------------
+
+data(api)
+dstrat <- svydesign(id=~1, strata=~stype, weights=~pw, data=apistrat, fpc=~fpc)
+
+model1 <- svyglm(api00~ell, design=dstrat)
+model2 <- update(model1, .~.+meals)
+model3 <- update(model2, .~.+mobility)
+
+gt_model(list(model1, model2, model3))
