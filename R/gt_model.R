@@ -7,15 +7,13 @@
 #' using a format common in many scientific fields. Multiple models can be included in the table
 #' by feeding in a list of model objects. The most common intended use of this function is within
 #' a Quarto document where the output will be displayed nicely in the final output.
-#' Currently the following models are verified to work:
-#' * [lm]
-#' * [glm]
-#' * margins
-#' * lmtest
-#' * svyglm from survey package
 #'
-#' Note that available summary statistics will vary by model type. Users can use `gt::rows_add`
-#' to add additional summary statistics rows to the table manually.
+#' Model output is extracted via the [broom](https://broom.tidymodels.org/index.html)
+#' package. Any model that can use the `broom::tidy` and `broom::glance` functions should
+#' work. You can see a full list of models with methods available in `broom`
+#' [here](https://broom.tidymodels.org/articles/available-methods.html). Some complex model
+#' types that don't return other elements basic estimates, standard errors, etc. may
+#' not work correctly.
 #'
 #' Because the returned object is a `gt_tbl`, it can be further refined to the user's
 #' tastes by piping it into subsequent [gt] commands.
@@ -43,8 +41,10 @@
 #' @param digits a numeric value indicating the number of decimals to round results to
 #' @param sig_thresh a numeric value indicating the threshold for statistical significance
 #'             for the asterisk. If NULL, asterisks will not be printed.
-#' @param summary_stats a character vector indicating desired summary statistics. See below
-#'                for a list of available options.
+#' @param summary_stats a character vector indicating desired summary statistics. The names
+#'                      should match summary statistic names produced through [broom::glance]
+#'                      when applied to a model of this type. The number of observations
+#'                      will always be reported.
 #' @param var_labels a named character vector indicating labels for the rows. Names should
 #'             either the actual variable names in the R model output for variables or
 #'             summary statistic names for summary statistics.
@@ -73,22 +73,22 @@
 #'   model2 <- update(model1, . ~ . + disp + wt)
 #'   model3 <- update(model2, . ~ . + as.factor(cyl))
 #'
-#'   name_corr <- c("Intercept" = "Constant",
+#'   name_corr <- c("(Intercept)" = "Constant",
 #'                  "hp" = "Horsepower",
 #'                  "disp" = "Displacement (cu. in.)",
 #'                  "wt" = "Weight (1000 lbs)",
 #'                  "as.factor(cyl)" = "Number of cylinders (ref. 4-cylinder)",
 #'                  "as.factor(cyl)6" = "6-cylinder",
 #'                  "as.factor(cyl)8" = "8-cylinder",
-#'                  "n" = "N",
-#'                  "rsquared" = "R-squared",
-#'                  "bic" = "BIC")
+#'                  "nobs" = "N",
+#'                  "r.squared" = "R-squared",
+#'                  "BIC" = "BIC")
 #'
 #'   gt_model(list(model1, model2, model3), var_labels = name_corr,
-#'            summary_stats = c("rsquared", "bic"),
+#'            summary_stats = c("r.squared", "BIC"),
 #'            groups=c("as.factor(cyl)")) |>
 #'     cols_label(model1 = "(1)", model2 = "(2)", model3 = "(3)") |>
-#'     fmt_number(rows = c("summary:bic"), decimals = 1) |>
+#'     fmt_number(rows = c("summary:BIC"), decimals = 1) |>
 #'     tab_source_note(md("*Notes:* Standard errors shown in parenthesis.")) |>
 #'     tab_options(table.width = "100%")
 #' }
@@ -106,89 +106,90 @@ gt_model <- function(models,
                      omit_var = NULL,
                      exponentiate = FALSE) {
 
-  #### Create Table Parts #####
+  #### Create Table #####
 
-  # extract coefficients
+  # use broom to get the model estimates
   tbl_coef <- models |>
-    purrr::map(extract_coef) |>
-    dplyr::bind_rows()
+    purrr::map(broom::tidy) |>
+    dplyr::bind_rows(.id="model") |>
+    dplyr::rename(variable=term,
+                  coef=estimate,
+                  se=std.error,
+                  tstat=statistic,
+                  pvalue=p.value)  |>
+    dplyr::mutate(model = stringr::str_c("model", model))
 
   if(exponentiate) {
-    tbl_coef <- exp(tbl_coef)
+    tbl_coef <- tbl_coef |>
+      dplyr::mutate(coef = exp(coef))
   }
 
-  # extract parenthetical values
+  # limit to just coefficient and parenthetical value
   if(parenthetical_value == "tstat") {
-    tbl_par <- models |>
-      purrr::map(extract_tstat) |>
-      dplyr::bind_rows()
+    tbl_coef <- tbl_coef |>
+      dplyr::select(model, variable, coef, tstat) |>
+      dplyr::rename(par=tstat)
   } else if(parenthetical_value == "pvalue") {
-    tbl_par <- models |>
-      purrr::map(extract_pvalue) |>
-      dplyr::bind_rows()
+    tbl_coef <- tbl_coef |>
+      dplyr::select(model, variable, coef, pvalue) |>
+      dplyr::rename(par=pvalue)
   } else {
     # default to standard errors
     if(parenthetical_value != "se") {
       message("argument to parenthetical value not recognized. Defaulting to standard errors")
     }
-    tbl_par <- models |>
-      purrr::map(extract_se) |>
-      dplyr::bind_rows()
+    tbl_coef <- tbl_coef |>
+      dplyr::select(model, variable, coef, se) |>
+      dplyr::rename(par=se)
   }
 
-  # extract summary statistics
-  tbl_summary <- models |>
-    purrr::map(extract_summary, summary_stats) |>
-    dplyr::bind_rows()
-
-  # get variable names for later
-  var_names <- factor(colnames(tbl_coef), levels = colnames(tbl_coef))
-  summary_names <- colnames(tbl_summary)
-  m <- nrow(tbl_coef)
-
-  # transpose both tables and convert back to tibbles
+  # reshape the table
   tbl_coef <- tbl_coef |>
-    transpose_tibble() |>
-    dplyr::mutate(type = "coef", variable = var_names)
+    tidyr::pivot_longer(cols = c(coef, par),
+                        names_to = "type",
+                        values_to = "value") |>
+    tidyr::pivot_wider(id_cols = c(variable, type),
+                       names_from = model,
+                       values_from = value)
 
-  tbl_par <- tbl_par |>
-    transpose_tibble() |>
-    dplyr::mutate(type = "par", variable = var_names)
-
-  #### Construct Full Table ####
-
+  # if beside, then reshape again
   if(beside) {
-    tbl_combined <- dplyr::bind_rows(tbl_coef, tbl_par) |>
+    tbl_coef <- tbl_coef |>
       tidyr::pivot_wider(id_cols=variable,
                          names_from=type,
-                         values_from=matches("^V[0-9]")) |>
-      dplyr::mutate(variable = paste("coef", variable, sep=":"))
-
-    tbl_summary <- tbl_summary |>
-      transpose_tibble() |>
-      dplyr::mutate(variable = paste("summary", summary_names, sep=":")) |>
-      dplyr::select(variable, dplyr::everything()) |>
-      dplyr::rename_with(~ paste0(.x, "_par", sep=""), matches("^V[0-9]"))
-
-    tbl <- dplyr::bind_rows(tbl_combined, tbl_summary)
+                         values_from=tidyselect::starts_with("model")) |>
+      dplyr::mutate(variable = stringr::str_c("coef", variable, sep=":"))
   } else {
-    tbl_combined <- dplyr::bind_rows(tbl_coef, tbl_par) |>
-      dplyr::arrange(variable, type) |>
-      dplyr::mutate(variable = paste(type, variable, sep=":")) |>
-      dplyr::select(!type) |>
-      dplyr::select(variable, dplyr::everything())
-
-    tbl_summary <- tbl_summary |>
-      transpose_tibble() |>
-      dplyr::mutate(variable = paste("summary", summary_names, sep=":")) |>
-      dplyr::select(variable, dplyr::everything())
-
-    tbl <- dplyr::bind_rows(tbl_combined, tbl_summary)
+    # if not beside we can get rid of type
+    tbl_coef <- tbl_coef |>
+      dplyr::mutate(variable = stringr::str_c(type, variable, sep=":")) |>
+      dplyr::select(!type)
   }
 
-  # change call columns to "modelX"
-  tbl <- tbl |>
-    dplyr::rename_with(~ gsub("V", "model", .x))
+  # now get summary statistics
+  if(!("nobs" %in% summary_stats)) {
+    # always include the number of observations
+    summary_stats <- c("nobs", summary_stats)
+  }
+
+  tbl_summary <- models |>
+    purrr::map(broom::glance) |>
+    dplyr::bind_rows(.id="model")  |>
+    dplyr::mutate(model = stringr::str_c("model", model)) |>
+    dplyr::select(c(model, tidyselect::all_of(summary_stats))) |>
+    tidyr::pivot_longer(cols = summary_stats, names_to = "variable") |>
+    tidyr::pivot_wider(names_from = model, values_from = value) |>
+    dplyr::mutate(variable = stringr::str_c("summary", variable, sep=":"))
+
+  if(beside) {
+    # need to rename columns in this case to match
+    tbl_summary <- tbl_summary |>
+      dplyr::rename_with(~ paste0(.x, "_par"),
+                         tidyselect::starts_with("model"))
+  }
+
+  # now combine them together
+  tbl <- dplyr::bind_rows(tbl_coef, tbl_summary)
 
   # drop any omitted variables
   for(x in omit_var) {
@@ -227,7 +228,7 @@ gt_model <- function(models,
   tbl_gt_model <- tbl |>
     gt(rowname_col = "variable") |>
     fmt_number(decimals = digits) |>
-    fmt_number(decimals = 0, rows = "summary:n") |>
+    fmt_number(decimals = 0, rows = "summary:nobs") |>
     sub_missing(missing_text = "") |>
     opt_footnote_marks(marks = c("*", "**", "***")) |>
     tab_options(footnotes.multiline = FALSE, footnotes.sep = ";")
@@ -243,13 +244,13 @@ gt_model <- function(models,
   }
   if(beside) {
     tbl_gt_model <- tbl_gt_model |>
-      fmt_number(columns = ends_with("_par"),
-                 rows = starts_with("coef:"),
+      fmt_number(columns = tidyselect::ends_with("_par"),
+                 rows = tidyselect::starts_with("coef:"),
                  pattern = parenthesis_pattern,
                  decimals = digits)
   } else {
     tbl_gt_model <- tbl_gt_model |>
-      fmt_number(rows = starts_with("par:"),
+      fmt_number(rows = tidyselect::starts_with("par:"),
                  pattern = parenthesis_pattern,
                  decimals = digits)
   }
@@ -280,28 +281,37 @@ gt_model <- function(models,
   #### Add Asterisks ####
 
   if (!is.null(sig_thresh)) {
+
     # create pvalue matrix
     tbl_p <- models |>
-      purrr::map(extract_pvalue) |>
-      dplyr::bind_rows() |>
-      transpose_tibble()
+      purrr::map(broom::tidy) |>
+      dplyr::bind_rows(.id="model") |>
+      dplyr::select(model, term, p.value) |>
+      dplyr::rename(variable=term,
+                    pvalue=p.value)  |>
+      dplyr::mutate(model = stringr::str_c("model", model)) |>
+      tidyr::pivot_wider(id_cols = variable,
+                         names_from = model,
+                         values_from = pvalue) |>
+      dplyr::mutate(variable = stringr::str_c("coef", variable, sep=":"))
 
-    is_sig <- tbl_p < sig_thresh
-    multiplier <- ifelse(beside, 2, 1)
-    var_id <- paste(tbl_coef$type, tbl_coef$variable, sep=":")
     sig_label <- paste("p < ", sig_thresh, sep = "")
 
     # loop through models and assign an asterisks
-    for (i in 1:m) {
-      sig_rows <- c(na.omit(var_id[is_sig[,i]]))
+    for (i in 2:ncol(tbl_p)) {
+      sig_rows <- tbl_p$variable[which(tbl_p[,i] < sig_thresh)]
       # check to make sure they have not been omitted
       for(x in omit_var) {
         x <- paste("^coef:", x, sep="")
         sig_rows <- sig_rows[!stringr::str_detect(sig_rows, x)]
       }
+      col_idx <- i
+      if(beside) {
+        col_idx <- 2 * i - 1
+      }
       tbl_gt_model <- tbl_gt_model |>
         tab_footnote(footnote = sig_label,
-                     locations = cells_body(columns = multiplier*i + 1,
+                     locations = cells_body(columns = col_idx,
                                             rows = sig_rows),
                      placement = "right")
     }
@@ -310,10 +320,3 @@ gt_model <- function(models,
   return(tbl_gt_model)
 }
 
-# helper function to transpose a tibble
-transpose_tibble <- function(x) {
-  x |>
-    t() |>
-    as.data.frame() |>
-    tibble::as_tibble()
-}
