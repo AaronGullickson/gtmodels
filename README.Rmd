@@ -49,15 +49,15 @@ name_corr <- c("(Intercept)" = "Constant",
                "wt" = "Weight (1000 lbs)",
                "as.factor(cyl)6" = "6-cylinder",
                "as.factor(cyl)8" = "8-cylinder",
-               "n" = "N",
-               "rsquared" = "R-squared",
-               "bic" = "BIC")
+               "nobs" = "N",
+               "r.squared" = "R-squared",
+               "BIC" = "BIC")
 
 tbl <- gt_model(list(model1, model2, model3),
-         summary_stats=c("rsquared","bic"),
+         summary_stats=c("r.squared","BIC"),
          var_labels = name_corr) |>
   cols_label(model1 = "(1)", model2 = "(2)", model3 = "(3)") |>
-  fmt_number(rows = c("summary:bic"), decimals = 1) |>
+  fmt_number(rows = c("summary:BIC"), decimals = 1) |>
   tab_source_note(md("*Notes:* Standard errors shown in parenthesis."))
 
 tbl

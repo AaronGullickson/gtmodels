@@ -43,21 +43,21 @@ name_corr <- c("(Intercept)" = "Constant",
                "wt" = "Weight (1000 lbs)",
                "as.factor(cyl)6" = "6-cylinder",
                "as.factor(cyl)8" = "8-cylinder",
-               "n" = "N",
-               "rsquared" = "R-squared",
-               "bic" = "BIC")
+               "nobs" = "N",
+               "r.squared" = "R-squared",
+               "BIC" = "BIC")
 
 tbl <- gt_model(list(model1, model2, model3),
-         summary_stats=c("rsquared","bic"),
+         summary_stats=c("r.squared","BIC"),
          var_labels = name_corr) |>
   cols_label(model1 = "(1)", model2 = "(2)", model3 = "(3)") |>
-  fmt_number(rows = c("summary:bic"), decimals = 1) |>
+  fmt_number(rows = c("summary:BIC"), decimals = 1) |>
   tab_source_note(md("*Notes:* Standard errors shown in parenthesis."))
 
 tbl
 ```
 
-<div id="ecyepshbxn" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<div id="jjgxykcmvs" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
   &#10;  <table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false" style="-webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'; display: table; border-collapse: collapse; line-height: normal; margin-left: auto; margin-right: auto; color: #333333; font-size: 16px; font-weight: normal; font-style: normal; background-color: #FFFFFF; width: auto; border-top-style: solid; border-top-width: 2px; border-top-color: #A8A8A8; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #A8A8A8; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3;" bgcolor="#FFFFFF">
   <thead style="border-style: none;">
     <tr class="gt_col_headings" style="border-style: none; border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3;">
@@ -131,7 +131,7 @@ tbl
   </tbody>
   <tfoot class="gt_sourcenotes" style="border-style: none; color: #333333; background-color: #FFFFFF; border-bottom-style: none; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3;" bgcolor="#FFFFFF">
     <tr style="border-style: none;">
-      <td class="gt_sourcenote" colspan="4" style="border-style: none; font-size: 90%; padding-top: 4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px;"><em>Notes:</em> Standard errors shown in parenthesis.</td>
+      <td class="gt_sourcenote" colspan="4" style="border-style: none; font-size: 90%; padding-top: 4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px;"><span class="gt_from_md"><em style="margin-top: 0; margin-bottom: 0;">Notes:</em> Standard errors shown in parenthesis.</span></td>
     </tr>
   </tfoot>
   <tfoot style="border-style: none;">
