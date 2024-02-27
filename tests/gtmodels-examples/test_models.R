@@ -47,6 +47,24 @@ gt_model(list(model1, model2, model3),
   fmt_number(rows = c("summary:BIC"), decimals = 1) |>
   tab_source_note(md("*Notes:* Standard errors shown in parenthesis."))
 
+# test use of custom function to get same results
+get_coef_lm <- function(model) {
+  summary(model)$coef |>
+    tibble::as_tibble(rownames = "term") |>
+    dplyr::rename(estimate = Estimate, std.error = `Std. Error`,
+                  statistic = `t value`, p.value = `Pr(>|t|)`)
+}
+
+gt_model(list(model1, model2, model3),
+         var_labels = name_corr,
+         digits=3,
+         fn_estimate = get_coef_lm,
+         summary_stats = c("r.squared", "BIC"),
+         groups=c("as.factor(cyl)")) |>
+  cols_label(model1 = "(1)", model2 = "(2)", model3 = "(3)") |>
+  fmt_number(rows = c("summary:BIC"), decimals = 1) |>
+  tab_source_note(md("*Notes:* Standard errors shown in parenthesis.")) |>
+  tab_options(table.width = "100%")
 
 # glm ---------------------------------------------------------------------
 
@@ -85,6 +103,49 @@ gt_model(list(model1, model2, model3),
   cols_label(model1 = "(1)", model2 = "(2)", model3 = "(3)") |>
   fmt_number(rows = c("summary:logLik", "summary:deviance"), decimals = 1) |>
   tab_source_note(md("*Notes:* Standard errors shown in parenthesis. All models include island fixed effects"))
+
+
+# try a custom function to get pseudo-rsquared
+
+get_summary_logit <- function(model) {
+  broom::glance(model) |>
+    dplyr::mutate(pseudo.rsquared = (null.deviance - deviance)/null.deviance)
+}
+
+gt_model(list(model1, model2, model3),
+         var_labels = name_corr,
+         omit_var = "island",
+         fn_summary = get_summary_logit,
+         summary_stats = c("logLik", "deviance", "pseudo.rsquared"),
+         groups = "species") |>
+  cols_label(model1 = "(1)", model2 = "(2)", model3 = "(3)") |>
+  fmt_number(rows = c("summary:logLik", "summary:deviance"), decimals = 1) |>
+  tab_source_note(md("*Notes:* Standard errors shown in parenthesis. All models include island fixed effects"))
+
+model1 <- glm(case ~ spontaneous+induced, data = infert, family = binomial())
+model2 <- update(model1, .~.+age+parity)
+model3 <- update(model2, .~.+education)
+
+names_corr <- c("(Intercept)" = "Intercept",
+                "spontaneous" = "Prior spontaneous abortions",
+                "induced" = "Prior induced abortions",
+                "age" = "Age",
+                "parity" = "Parity",
+                "education" = "Education (ref. less than 6 years)",
+                "education6-11yrs" = "6-11 years",
+                "education12+ yrs" = "12 or more years",
+                "nobs" = "N",
+                "deviance" = "Deviance",
+                "pseudo.rsquared" = "Pseudo R-squared")
+
+gt_model(list(model1, model2, model3),
+         var_labels = names_corr,
+         groups = "education",
+         summary_stats = c("nobs", "deviance", "pseudo.rsquared"),
+         fn_summary = get_summary_logit)  |>
+  cols_label(model1 = "(1)", model2 = "(2)", model3 = "(3)") |>
+  fmt_number(rows = "summary:deviance", decimals = 1) |>
+  tab_source_note(md("*Notes:* Standard errors shown in parenthesis."))
 
 
 # margins -----------------------------------------------------------------
@@ -146,4 +207,5 @@ model1 <- clogit(case~spontaneous+strata(stratum), data=infert)
 model2 <- update(model1, .~.+induced)
 
 gt_model(list(model1, model2))
+
 
