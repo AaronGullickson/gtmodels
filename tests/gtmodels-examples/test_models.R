@@ -5,6 +5,8 @@ library(margins)
 library(lmtest)
 library(sandwich)
 library(AER)
+library(survey)
+library(survival)
 
 # lm ----------------------------------------------------------------------
 
@@ -19,17 +21,17 @@ name_corr <- c("(Intercept)" = "Constant",
                "as.factor(cyl)" = "Number of cylinders (ref. 4-cylinder)",
                "as.factor(cyl)6" = "6-cylinder",
                "as.factor(cyl)8" = "8-cylinder",
-               "n" = "N",
-               "rsquared" = "R-squared",
-               "bic" = "BIC")
+               "nobs" = "N",
+               "r.squared" = "R-squared",
+               "BIC" = "BIC")
 
 gt_model(list(model1, model2, model3),
          var_labels = name_corr,
          digits=3,
-         summary_stats = c("rsquared", "bic"),
+         summary_stats = c("r.squared", "BIC"),
          groups=c("as.factor(cyl)")) |>
   cols_label(model1 = "(1)", model2 = "(2)", model3 = "(3)") |>
-  fmt_number(rows = c("summary:bic"), decimals = 1) |>
+  fmt_number(rows = c("summary:BIC"), decimals = 1) |>
   tab_source_note(md("*Notes:* Standard errors shown in parenthesis.")) |>
   tab_options(table.width = "100%")
 
@@ -37,12 +39,12 @@ gt_model(list(model1, model2, model3),
 gt_model(list(model1, model2, model3),
          var_labels = name_corr,
          digits=3,
-         summary_stats = c("rsquared", "bic"),
+         summary_stats = c("r.squared", "BIC"),
          beside = TRUE,
          groups=c("as.factor(cyl)")) |>
   cols_label(model1_coef = "", model2_coef = "", model3_coef = "",
              model1_par = "(1)", model2_par = "(2)", model3_par = "(3)") |>
-  fmt_number(rows = c("summary:bic"), decimals = 1) |>
+  fmt_number(rows = c("summary:BIC"), decimals = 1) |>
   tab_source_note(md("*Notes:* Standard errors shown in parenthesis."))
 
 
@@ -58,31 +60,30 @@ name_corr <- c("(Intercept)" = "Intercept",
                "speciesChinstrap" = "Chinstrap",
                "speciesGentoo" = "Gentoo",
                "species" = "Species (ref. Adelie)",
-               "n" = "N",
-               "loglik" = "Log-likelihood",
+               "nobs" = "N",
+               "logLik" = "Log-likelihood",
                "deviance" = "Deviance",
                "pseudo_rsquared" = "Pseudo R-squared")
 
 gt_model(list(model1, model2, model3),
          var_labels = name_corr,
          omit_var = "island",
-         summary_stats = c("loglik", "deviance", "pseudo_rsquared"),
+         summary_stats = c("logLik", "deviance"),
          groups = "species") |>
   cols_label(model1 = "(1)", model2 = "(2)", model3 = "(3)") |>
-  fmt_number(rows = c("summary:loglik", "summary:deviance"), decimals = 1) |>
+  fmt_number(rows = c("summary:logLik", "summary:deviance"), decimals = 1) |>
   tab_source_note(md("*Notes:* Standard errors shown in parenthesis. All models include island fixed effects"))
 
 
 # try exponentiating results
 gt_model(list(model1, model2, model3),
-         exponentiate = TRUE,
-         digits = 4,
          var_labels = name_corr,
          omit_var = "island",
-         summary_stats = c("loglik", "deviance", "pseudo_rsquared"),
-         groups = "species") |>
+         summary_stats = c("logLik", "deviance"),
+         groups = "species",
+         exponentiate = TRUE) |>
   cols_label(model1 = "(1)", model2 = "(2)", model3 = "(3)") |>
-  fmt_number(rows = c("summary:loglik", "summary:deviance"), decimals = 1) |>
+  fmt_number(rows = c("summary:logLik", "summary:deviance"), decimals = 1) |>
   tab_source_note(md("*Notes:* Standard errors shown in parenthesis. All models include island fixed effects"))
 
 
@@ -126,4 +127,23 @@ gt_model(lapply(list(model1, model2, model3),
          var_labels = name_corr) |>
   cols_label(model1 = "(1)", model2 = "(2)", model3 = "(3)") |>
   tab_source_note(md("*Notes:* Robust standard errors shown in parenthesis."))
+
+# svyglm -----------------------------------------------------------------
+
+data(api)
+dstrat <- svydesign(id=~1, strata=~stype, weights=~pw, data=apistrat, fpc=~fpc)
+
+model1 <- svyglm(api00~ell, design=dstrat)
+model2 <- update(model1, .~.+meals)
+model3 <- update(model2, .~.+mobility)
+
+gt_model(list(model1, model2, model3))
+
+
+# survival ----------------------------------------------------------------
+
+model1 <- clogit(case~spontaneous+strata(stratum), data=infert)
+model2 <- update(model1, .~.+induced)
+
+gt_model(list(model1, model2))
 

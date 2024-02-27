@@ -26,8 +26,10 @@ gt_model(
 \item{sig_thresh}{a numeric value indicating the threshold for statistical significance
 for the asterisk. If NULL, asterisks will not be printed.}
 
-\item{summary_stats}{a character vector indicating desired summary statistics. See below
-for a list of available options.}
+\item{summary_stats}{a character vector indicating desired summary statistics. The names
+should match summary statistic names produced through \link[broom:reexports]{broom::glance}
+when applied to a model of this type. The number of observations
+will always be reported.}
 
 \item{var_labels}{a named character vector indicating labels for the rows. Names should
 either the actual variable names in the R model output for variables or
@@ -67,16 +69,13 @@ This function can be used to create a \link{gt} table of model (i.e. regression)
 using a format common in many scientific fields. Multiple models can be included in the table
 by feeding in a list of model objects. The most common intended use of this function is within
 a Quarto document where the output will be displayed nicely in the final output.
-Currently the following models are verified to work:
-\itemize{
-\item \link{lm}
-\item \link{glm}
-\item margins
-\item lmtest
-}
 
-Note that available summary statistics will vary by model type. Users can use \code{gt::rows_add}
-to add additional summary statistics rows to the table manually.
+Model output is extracted via the \href{https://broom.tidymodels.org/index.html}{broom}
+package. Any model that can use the \code{broom::tidy} and \code{broom::glance} functions should
+work. You can see a full list of models with methods available in \code{broom}
+\href{https://broom.tidymodels.org/articles/available-methods.html}{here}. Some complex model
+types that don't return other elements basic estimates, standard errors, etc. may
+not work correctly.
 
 Because the returned object is a \code{gt_tbl}, it can be further refined to the user's
 tastes by piping it into subsequent \link{gt} commands.
@@ -105,22 +104,22 @@ if (require("gt")) {
   model2 <- update(model1, . ~ . + disp + wt)
   model3 <- update(model2, . ~ . + as.factor(cyl))
 
-  name_corr <- c("Intercept" = "Constant",
+  name_corr <- c("(Intercept)" = "Constant",
                  "hp" = "Horsepower",
                  "disp" = "Displacement (cu. in.)",
                  "wt" = "Weight (1000 lbs)",
                  "as.factor(cyl)" = "Number of cylinders (ref. 4-cylinder)",
                  "as.factor(cyl)6" = "6-cylinder",
                  "as.factor(cyl)8" = "8-cylinder",
-                 "n" = "N",
-                 "rsquared" = "R-squared",
-                 "bic" = "BIC")
+                 "nobs" = "N",
+                 "r.squared" = "R-squared",
+                 "BIC" = "BIC")
 
   gt_model(list(model1, model2, model3), var_labels = name_corr,
-           summary_stats = c("rsquared", "bic"),
+           summary_stats = c("r.squared", "BIC"),
            groups=c("as.factor(cyl)")) |>
     cols_label(model1 = "(1)", model2 = "(2)", model3 = "(3)") |>
-    fmt_number(rows = c("summary:bic"), decimals = 1) |>
+    fmt_number(rows = c("summary:BIC"), decimals = 1) |>
     tab_source_note(md("*Notes:* Standard errors shown in parenthesis.")) |>
     tab_options(table.width = "100\%")
 }
