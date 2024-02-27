@@ -10,7 +10,7 @@ gt_model(
   sig_thresh = 0.05,
   summary_stats = NULL,
   var_labels = c(n = "N"),
-  parenthetical_value = "se",
+  parenthetical_value = "std.error",
   parenthesis_type = "regular",
   beside = FALSE,
   groups = NULL,
@@ -35,8 +35,9 @@ will always be reported.}
 either the actual variable names in the R model output for variables or
 summary statistic names for summary statistics.}
 
-\item{parenthetical_value}{A character string of either "se", "tstat", or "pvalue"
-indicating what to include in parenthesis. Defaults to standard errors.}
+\item{parenthetical_value}{A character string of either "std.error", "statistic" (e.g. test statistic),
+or "p.value" indicating what to include in parenthesis.
+Defaults to standard errors.}
 
 \item{parenthesis_type}{A character string of either "regular", "square", or "curly" indicating
 the type of parenthesis to use for parenthetical values.}

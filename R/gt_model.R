@@ -48,8 +48,9 @@
 #' @param var_labels a named character vector indicating labels for the rows. Names should
 #'             either the actual variable names in the R model output for variables or
 #'             summary statistic names for summary statistics.
-#' @param parenthetical_value A character string of either "se", "tstat", or "pvalue"
-#'             indicating what to include in parenthesis. Defaults to standard errors.
+#' @param parenthetical_value A character string of either "std.error", "statistic" (e.g. test statistic),
+#'                            or "p.value" indicating what to include in parenthesis.
+#'                            Defaults to standard errors.
 #' @param parenthesis_type A character string of either "regular", "square", or "curly" indicating
 #'             the type of parenthesis to use for parenthetical values.
 #' @param beside A logical indicating whether to show the parenthetical value
@@ -99,7 +100,7 @@ gt_model <- function(models,
                      sig_thresh = 0.05,
                      summary_stats = NULL,
                      var_labels = c("n" = "N"),
-                     parenthetical_value = "se",
+                     parenthetical_value = "std.error",
                      parenthesis_type = "regular",
                      beside = FALSE,
                      groups = NULL,
@@ -108,39 +109,24 @@ gt_model <- function(models,
 
   #### Create Table #####
 
+  if(!(parenthetical_value %in% c("std.error", "statistic", "p.value"))) {
+    parenthetical_value <- "std.error"
+    warning("Parenthetical value not recognized. Defaulting to std.error.")
+  }
+
   # use broom to get the model estimates
   tbl_coef <- models |>
     purrr::map(broom::tidy) |>
     dplyr::bind_rows(.id="model") |>
-    dplyr::rename(variable=term,
-                  coef=estimate,
-                  se=std.error,
-                  tstat=statistic,
-                  pvalue=p.value)  |>
+    dplyr::select(model, term, estimate, !!parenthetical_value) |>
+    dplyr::rename(variable = term,
+                  coef = estimate,
+                  par = !!parenthetical_value)  |>
     dplyr::mutate(model = stringr::str_c("model", model))
 
   if(exponentiate) {
     tbl_coef <- tbl_coef |>
       dplyr::mutate(coef = exp(coef))
-  }
-
-  # limit to just coefficient and parenthetical value
-  if(parenthetical_value == "tstat") {
-    tbl_coef <- tbl_coef |>
-      dplyr::select(model, variable, coef, tstat) |>
-      dplyr::rename(par=tstat)
-  } else if(parenthetical_value == "pvalue") {
-    tbl_coef <- tbl_coef |>
-      dplyr::select(model, variable, coef, pvalue) |>
-      dplyr::rename(par=pvalue)
-  } else {
-    # default to standard errors
-    if(parenthetical_value != "se") {
-      message("argument to parenthetical value not recognized. Defaulting to standard errors")
-    }
-    tbl_coef <- tbl_coef |>
-      dplyr::select(model, variable, coef, se) |>
-      dplyr::rename(par=se)
   }
 
   # reshape the table
