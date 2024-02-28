@@ -56,3 +56,19 @@ test_that("Parenthetical value can be changed", {
   tbl |> as_latex() |> expect_snapshot()
 })
 
+test_that("Parenthetical type can be changed", {
+  tbl <- gt_model(models, parenthesis_type = "square")
+  tbl |> as_latex() |> expect_snapshot()
+  tbl <- gt_model(models, parenthesis_type = "curly")
+  tbl |> as_latex() |> expect_snapshot()
+})
+
+test_that("Wrong parenthetical value leads to warning", {
+  expect_warning(gt_model(models, parenthetical_value = "bob"),
+                 "Parenthetical value not recognized. Defaulting to std.error.")
+})
+
+test_that("Wrong parenthetical type leads to warning", {
+  expect_warning(gt_model(models, parenthesis_type = "bob"),
+                 "Parenthesis type not recognized. Defaulting to regular.")
+})
