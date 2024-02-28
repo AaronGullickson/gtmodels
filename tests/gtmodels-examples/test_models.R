@@ -102,7 +102,7 @@ gt_model(list(model1, model2, model3),
          exponentiate = TRUE) |>
   cols_label(model1 = "(1)", model2 = "(2)", model3 = "(3)") |>
   fmt_number(rows = c("summary:logLik", "summary:deviance"), decimals = 1) |>
-  tab_source_note(md("*Notes:* Standard errors shown in parenthesis. All models include island fixed effects"))
+  tab_source_note(md("*Notes:* Standard errors shown in parenthesis. All models include island fixed effects."))
 
 
 # try a custom function to get pseudo-rsquared
@@ -120,33 +120,7 @@ gt_model(list(model1, model2, model3),
          groups = "species") |>
   cols_label(model1 = "(1)", model2 = "(2)", model3 = "(3)") |>
   fmt_number(rows = c("summary:logLik", "summary:deviance"), decimals = 1) |>
-  tab_source_note(md("*Notes:* Standard errors shown in parenthesis. All models include island fixed effects"))
-
-model1 <- glm(case ~ spontaneous+induced, data = infert, family = binomial())
-model2 <- update(model1, .~.+age+parity)
-model3 <- update(model2, .~.+education)
-
-names_corr <- c("(Intercept)" = "Intercept",
-                "spontaneous" = "Prior spontaneous abortions",
-                "induced" = "Prior induced abortions",
-                "age" = "Age",
-                "parity" = "Parity",
-                "education" = "Education (ref. less than 6 years)",
-                "education6-11yrs" = "6-11 years",
-                "education12+ yrs" = "12 or more years",
-                "nobs" = "N",
-                "deviance" = "Deviance",
-                "pseudo.rsquared" = "Pseudo R-squared")
-
-gt_model(list(model1, model2, model3),
-         var_labels = names_corr,
-         groups = "education",
-         summary_stats = c("nobs", "deviance", "pseudo.rsquared"),
-         fn_summary = get_summary_logit)  |>
-  cols_label(model1 = "(1)", model2 = "(2)", model3 = "(3)") |>
-  fmt_number(rows = "summary:deviance", decimals = 1) |>
-  tab_source_note(md("*Notes:* Standard errors shown in parenthesis."))
-
+  tab_source_note(md("*Notes:* Standard errors shown in parenthesis. All models include island fixed effects."))
 
 # margins -----------------------------------------------------------------
 
@@ -157,7 +131,7 @@ gt_model(lapply(list(model1, model2, model3), margins),
          omit_var = "island",
          groups = "species") |>
   cols_label(model1 = "(1)", model2 = "(2)", model3 = "(3)") |>
-  tab_source_note(md("*Notes:* Standard errors shown in parenthesis. All models include island fixed effects"))
+  tab_source_note(md("*Notes:* Standard errors shown in parenthesis. All models include island fixed effects."))
 
 
 # lmtest ------------------------------------------------------------------
