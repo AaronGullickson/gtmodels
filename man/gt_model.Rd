@@ -15,7 +15,7 @@ gt_model(
   beside = FALSE,
   groups = NULL,
   omit_var = NULL,
-  exponentiate = FALSE,
+  fn_transform = NULL,
   fn_estimate = NULL,
   fn_summary = NULL
 )
@@ -54,10 +54,8 @@ variables).}
 \item{omit_var}{A character vector indicating variable names for variables that should
 be omitted from the final model.}
 
-\item{exponentiate}{A boolean value indicating whether the coefficients from the model
-should be exponentiated (taken to the power of e). This may be
-useful for some models that use a log transformation of the
-dependent variable.}
+\item{fn_transform}{A function (e.g. \code{exp}) that will be used to transform the coefficients
+for the model}
 
 \item{fn_estimate}{A user-supplied custom function to extract variable-specific
 estimates from the supplied model object. This can be useful if

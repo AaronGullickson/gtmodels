@@ -7,7 +7,7 @@ build_tbl <- function(models,
                       summary_stats = NULL,
                       parenthetical_value = "std.error",
                       beside = FALSE,
-                      exponentiate = FALSE,
+                      fn_transform = NULL,
                       fn_estimate = NULL,
                       fn_summary = NULL) {
 
@@ -22,9 +22,10 @@ build_tbl <- function(models,
                   par = !!parenthetical_value)  |>
     dplyr::mutate(model = stringr::str_c("model", model))
 
-  if(exponentiate) {
+  # potentially transform coefficients
+  if(!is.null(fn_transform)) {
     tbl_coef <- tbl_coef |>
-      dplyr::mutate(coef = exp(coef))
+      dplyr::mutate(coef = fn_transform(coef))
   }
 
   # reshape the table
@@ -200,7 +201,8 @@ apply_asterisks <- function(tbl_gt_model,
                             models,
                             sig_thresh,
                             beside,
-                            omit_var) {
+                            omit_var,
+                            fn_estimate) {
 
   # create pvalue matrix
   tbl_p <- models |>

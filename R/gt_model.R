@@ -64,10 +64,8 @@
 #'               variables).
 #' @param omit_var A character vector indicating variable names for variables that should
 #'                 be omitted from the final model.
-#' @param exponentiate A boolean value indicating whether the coefficients from the model
-#'                     should be exponentiated (taken to the power of e). This may be
-#'                     useful for some models that use a log transformation of the
-#'                     dependent variable.
+#' @param fn_transform A function (e.g. `exp`) that will be used to transform the coefficients
+#'                     for the model
 #' @param fn_estimate A user-supplied custom function to extract variable-specific
 #'                    estimates from the supplied model object. This can be useful if
 #'                    the model has no existing method in [broom]. The returned object
@@ -162,7 +160,7 @@ gt_model <- function(models,
                      beside = FALSE,
                      groups = NULL,
                      omit_var = NULL,
-                     exponentiate = FALSE,
+                     fn_transform = NULL,
                      fn_estimate = NULL,
                      fn_summary = NULL) {
 
@@ -177,7 +175,7 @@ gt_model <- function(models,
                    summary_stats = summary_stats,
                    parenthetical_value = parenthetical_value,
                    beside = beside,
-                   exponentiate = exponentiate,
+                   fn_transform = fn_transform,
                    fn_estimate = fn_estimate,
                    fn_summary = fn_summary)
 
@@ -210,7 +208,8 @@ gt_model <- function(models,
       apply_asterisks(models = models,
                       sig_thresh = sig_thresh,
                       beside = beside,
-                      omit_var = omit_var)
+                      omit_var = omit_var,
+                      fn_estimate = fn_estimate)
   }
 
   return(tbl_gt_model)

@@ -99,7 +99,7 @@ gt_model(list(model1, model2, model3),
          omit_var = "island",
          summary_stats = c("logLik", "deviance"),
          groups = "species",
-         exponentiate = TRUE) |>
+         fn_transform = exp) |>
   cols_label(model1 = "(1)", model2 = "(2)", model3 = "(3)") |>
   fmt_number(rows = c("summary:logLik", "summary:deviance"), decimals = 1) |>
   tab_source_note(md("*Notes:* Standard errors shown in parenthesis. All models include island fixed effects."))
