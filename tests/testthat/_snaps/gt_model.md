@@ -537,3 +537,80 @@
       attr(,"knit_cacheable")
       [1] NA
 
+# A transformation function can be applied
+
+    Code
+      as_latex(tbl)
+    Output
+      [1] "\\begin{table}\n\\begin{tabular*}{\\linewidth}{@{\\extracolsep{\\fill}}l|rrr}\n\\toprule\n\\multicolumn{1}{l}{} & model1 & model2 & model3 \\\\ \n\\midrule\\addlinespace[2.5pt]\ncoef:(Intercept) & $11,796,931,127,359.479$\\textsuperscript{\\textit{*}} & $13,023,154,312,206,508.000$\\textsuperscript{\\textit{*}} & $4,321,610,379,402,674.500$\\textsuperscript{\\textit{*}} \\\\ \n & ($1.634$) & ($2.111$) & ($2.131$) \\\\ \ncoef:hp & $0.934$\\textsuperscript{\\textit{*}} & $0.969$\\textsuperscript{\\textit{*}} & $0.977$ \\\\ \n & ($0.010$) & ($0.011$) & ($0.012$) \\\\ \ncoef:disp &  & $0.999$ & $1.004$ \\\\ \n &  & ($0.010$) & ($0.013$) \\\\ \ncoef:wt &  & $0.022$\\textsuperscript{\\textit{*}} & $0.032$\\textsuperscript{\\textit{*}} \\\\ \n &  & ($1.066$) & ($1.055$) \\\\ \ncoef:as.factor(cyl)6 &  &  & $0.031$\\textsuperscript{\\textit{*}} \\\\ \n &  &  & ($1.463$) \\\\ \ncoef:as.factor(cyl)8 &  &  & $0.023$ \\\\ \n &  &  & ($2.814$) \\\\ \nN & $32$ & $32$ & $32$ \\\\ \n\\bottomrule\n\\end{tabular*}\n\\begin{minipage}{\\linewidth}\n\\textsuperscript{\\textit{*}}p < 0.05\\\\\n\\end{minipage}\n\\end{table}\n"
+      attr(,"class")
+      [1] "knit_asis"
+      attr(,"knit_meta")
+      attr(,"knit_meta")[[1]]
+      $name
+      [1] "booktabs"
+      
+      $options
+      NULL
+      
+      $extra_lines
+      NULL
+      
+      attr(,"class")
+      [1] "latex_dependency"
+      
+      attr(,"knit_meta")[[2]]
+      $name
+      [1] "caption"
+      
+      $options
+      NULL
+      
+      $extra_lines
+      NULL
+      
+      attr(,"class")
+      [1] "latex_dependency"
+      
+      attr(,"knit_meta")[[3]]
+      $name
+      [1] "longtable"
+      
+      $options
+      NULL
+      
+      $extra_lines
+      NULL
+      
+      attr(,"class")
+      [1] "latex_dependency"
+      
+      attr(,"knit_meta")[[4]]
+      $name
+      [1] "colortbl"
+      
+      $options
+      NULL
+      
+      $extra_lines
+      NULL
+      
+      attr(,"class")
+      [1] "latex_dependency"
+      
+      attr(,"knit_meta")[[5]]
+      $name
+      [1] "array"
+      
+      $options
+      NULL
+      
+      $extra_lines
+      NULL
+      
+      attr(,"class")
+      [1] "latex_dependency"
+      
+      attr(,"knit_cacheable")
+      [1] NA
+
