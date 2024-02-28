@@ -173,17 +173,8 @@ gt_model <- function(models,
     warning("Parenthetical value not recognized. Defaulting to std.error.")
   }
 
-  if(is.null(fn_estimate)) {
-    # use broom to get the model estimates
-    tbl_coef <- models |>
-      purrr::map(broom::tidy)
-  } else {
-    # try the custom function
-    tbl_coef <- models |>
-      purrr::map(fn_estimate)
-  }
-
-  tbl_coef <- tbl_coef |>
+  tbl_coef <- models |>
+    purrr::map(ifelse(is.null(fn_estimate), broom::tidy, fn_estimate)) |>
     dplyr::bind_rows(.id="model") |>
     dplyr::select(model, term, estimate, !!parenthetical_value) |>
     dplyr::rename(variable = term,
@@ -191,12 +182,10 @@ gt_model <- function(models,
                   par = !!parenthetical_value)  |>
     dplyr::mutate(model = stringr::str_c("model", model))
 
-
   if(exponentiate) {
     tbl_coef <- tbl_coef |>
       dplyr::mutate(coef = exp(coef))
   }
-
 
   # reshape the table
   tbl_coef <- tbl_coef |>
@@ -227,15 +216,8 @@ gt_model <- function(models,
     summary_stats <- c("nobs", summary_stats)
   }
 
-  if(is.null(fn_summary)) {
-    tbl_summary <- models |>
-      purrr::map(broom::glance)
-  } else {
-    tbl_summary <- models |>
-      purrr::map(fn_summary)
-  }
-
-  tbl_summary <- tbl_summary |>
+  tbl_summary <- models |>
+    purrr::map(ifelse(is.null(fn_summary), broom::glance, fn_summary)) |>
     dplyr::bind_rows(.id="model")  |>
     dplyr::mutate(model = stringr::str_c("model", model)) |>
     dplyr::select(c(model, tidyselect::all_of(summary_stats))) |>
