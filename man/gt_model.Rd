@@ -9,7 +9,7 @@ gt_model(
   digits = 3,
   sig_thresh = 0.05,
   summary_stats = NULL,
-  var_labels = c(n = "N"),
+  var_labels = c(nobs = "N"),
   parenthetical_value = "std.error",
   parenthesis_type = "regular",
   beside = FALSE,
