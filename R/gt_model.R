@@ -21,8 +21,8 @@
 #' complex model types that return other elements besides estimates,
 #' standard errors, and p.values may not work correctly.
 #'
-#' For model classes without corresponding [broom] methods, the user may specify the
-#' `fn_estimate` and `fn_summary` arguments to supply custom functions that
+#' For model classes without corresponding [broom] methods, the user may specify
+#' the `fn_estimate` and `fn_summary` arguments to supply custom functions that
 #' extract this information from the model object in a manner analogous to
 #' [broom::tidy] and [broom::glance], respectively.
 #'
