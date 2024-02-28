@@ -81,7 +81,7 @@ name_corr <- c("(Intercept)" = "Intercept",
                "nobs" = "N",
                "logLik" = "Log-likelihood",
                "deviance" = "Deviance",
-               "pseudo_rsquared" = "Pseudo R-squared")
+               "pseudo.rsquared" = "Pseudo R-squared")
 
 gt_model(list(model1, model2, model3),
          var_labels = name_corr,
