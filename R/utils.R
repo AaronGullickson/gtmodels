@@ -142,7 +142,7 @@ construct_tbl_gt <- function(tbl,
   } else if(parenthesis_type == "curly") {
     parenthesis_pattern <- "{{x}}"
   } else if(parenthesis_type != "regular") {
-    message("Parenthesis type not recognized. Defaulting to regular.")
+    warning("Parenthesis type not recognized. Defaulting to regular.")
   }
   if(beside) {
     tbl_gt_model <- tbl_gt_model |>
