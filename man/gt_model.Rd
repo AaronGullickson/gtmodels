@@ -2,7 +2,7 @@
 % Please edit documentation in R/gt_model.R
 \name{gt_model}
 \alias{gt_model}
-\title{Generates a table from model results using the \code{gt} library.}
+\title{Create a \strong{gt} table from multiple model results}
 \usage{
 gt_model(
   models,
@@ -21,107 +21,211 @@ gt_model(
 )
 }
 \arguments{
-\item{models}{a \code{list} of models, of either the \code{lm} or \code{glm} command.}
+\item{models}{\emph{List of models}
 
-\item{digits}{a numeric value indicating the number of decimals to use when rounding numbers.}
+\code{list} // \strong{required}
 
-\item{sig_thresh}{a numeric value indicating the threshold for statistical significance
-for the asterisk. If NULL, asterisks will not be printed.}
+A \code{list} of models of the same type. These models either must have
+\link[broom:reexports]{broom::tidy} and \link[broom:reexports]{broom::glance} methods, or the user must specify custom
+estimate and summary statistic extraction functions using \code{fn_estimate} and
+\code{fn_summary} arguments.}
 
-\item{summary_stats}{a character vector indicating desired summary statistics. The names
-should match summary statistic names produced through \link[broom:reexports]{broom::glance}
-when applied to a model of this type. The number of observations
-will always be reported.}
+\item{digits}{\emph{Number of rounding digits}
 
-\item{var_labels}{a named character vector indicating labels for the rows. Names should
-be the actual variable names in the R model output for variables or
-summary statistic names from \link[broom:reexports]{broom::glance} for summary statistics.}
+\verb{scalar<numeric>} // \emph{default:} \code{3}
 
-\item{parenthetical_value}{A character string of either "std.error", "statistic" (e.g. test statistic),
-or "p.value" indicating what to include in parenthesis.
-Defaults to standard errors.}
+Indicates the number of decimals to use when rounding numbers in the table.
+This can be overridden for particular columns, rows, or cells after table
+with \link[gt:fmt_number]{gt::fmt_number}.}
 
-\item{parenthesis_type}{A character string of either "regular", "square", or "curly" indicating
-the type of parenthesis to use for parenthetical values.}
+\item{sig_thresh}{\emph{Significance threshold}
 
-\item{beside}{A logical indicating whether to show the parenthetical value
-on the same row (TRUE) or a separate row (FALSE; default).}
+\verb{scalar<numeric>} // \emph{default:} \code{0.05}
 
-\item{groups}{A character vector indicating the factor name for variables that
-should be grouped together under a heading row (e.g. for categorical
-variables).}
+A numeric value indicating the threshold for statistical significance. An
+asterisks will be placed on all coefficients with a p-value lower than the
+threshold. If \code{NULL}, asterisks will not be printed.}
 
-\item{omit_var}{A character vector indicating variable names for variables that should
-be omitted from the final model.}
+\item{summary_stats}{\emph{Summary statistics}
 
-\item{fn_transform}{A function (e.g. \code{exp}) that will be used to transform the coefficients
-for the model}
+\verb{vector<character>} // \emph{default:} \code{NULL} (\code{optional})
 
-\item{fn_estimate}{A user-supplied custom function to extract variable-specific
-estimates from the supplied model object. This can be useful if
-the model has no existing method in \link{broom}. The returned object
+A vector of character strings indicating desired summary statistics to
+place at the bottom of the table. The names must match summary statistic
+names produced by \link[broom:reexports]{broom::glance} when applied to a model of this type. The
+number of observations will always be reported, even if this argument is
+null.}
+
+\item{var_labels}{\emph{Variable labels for display}
+
+\verb{vector<character>} // \emph{default:} \code{c(nobs = "N")}
+
+A named character vector indicating display labels for the row stub. Names
+should correspond the actual variable name in the R model output without
+the \code{:} prefix  for variables, or summary statistic names from
+\link[broom:reexports]{broom::glance} for summary statistics.}
+
+\item{parenthetical_value}{\emph{Parenthetical value type}
+
+\verb{scalar<character>} // \emph{default:} \code{std.error}
+
+A character string of either "std.error", "statistic" (e.g. test
+statistic), or "p.value" indicating what parenthetical value to include in
+parenthesis.}
+
+\item{parenthesis_type}{\emph{Parenthesis type}
+
+\verb{scalar<character>} // \emph{default:} \code{regular}
+
+A character string of either "regular", "square", or "curly" indicating the}
+
+\item{beside}{\emph{Place parenthetical values beside rather than below}
+
+\verb{scalar<logical>} // \emph{default:} \code{FALSE}
+
+Should parenthetical values be reported in separate columns beside
+coefficients, rather than below?}
+
+\item{groups}{\emph{Identify variables belonging to the same group}
+
+\verb{vector<character>} // \emph{default:} \code{NULL} (\code{optional})
+
+A character vector indicating the variable name for variables that should
+be grouped together under a heading row (e.g. for categorical variables).
+This will generally be the name of the factor variable that creates the
+individual dummy variables in the model.}
+
+\item{omit_var}{\emph{Identify variables to omit from the table}
+
+\verb{vector<character>} // \emph{default:} \code{NULL} (\code{optional})
+
+A character vector indicating variable names for variables that should be
+omitted from the final table.}
+
+\item{fn_transform}{\emph{Transform coefficients with a function}
+
+\code{function} // \emph{default:} \code{NULL} (\code{optional})
+
+A function (e.g. \code{exp}) that will be used to transform the coefficients for
+the model for the final output.}
+
+\item{fn_estimate}{\emph{Custom function to extract model estimates}
+
+\code{function} // \emph{default:} \code{NULL} (\code{optional})
+
+A user-supplied custom function to extract
+variable-specific estimates from the supplied model object. This can be
+useful if the model has no existing method in \link{broom}. The returned object
 should be a \link{tibble} of the same type as returned from \link[broom:reexports]{broom::tidy}. Each
-row should be for a given independent variables and the column names
-\code{term} (for variable name), \code{estimate} (for coefficient value),
-\code{std.error}, \code{statistic} (for test statistic), and \code{p.value}.}
+row should be for a given independent variables with columns for \code{term}
+(for variable name), \code{estimate} (for coefficient value), \code{std.error},
+\code{statistic} (for test statistic), and \code{p.value}.}
 
-\item{fn_summary}{A user-supplied custom function to extract additional summary
-statistics from the supplied model object. These additional summary
-statistics can then be added via the \code{summary_stats} argument. This
-can be useful to add custom summary statistics not available in
-\link[broom:reexports]{broom::glance} or if no existing method exists in \link{broom} for this type
-of model object. The
-returned object should be a \link{tibble} of the same type as returned
-from \link[broom:reexports]{broom::glance}. It should have only one row, and any desired
-summary statistics should be included as variables. In many cases,
-the output from \link[broom:reexports]{broom::glance} can be augmented in this function
-with additional information. See below for an example of
-this approach for pseudo-R-squared in a logit model.}
+\item{fn_summary}{\emph{Custom function to extract model summary statistics}
+
+\code{function} // \emph{default:} \code{NULL} (\code{optional})
+
+A user-supplied custom function to extract additional
+summary statistics from the supplied model object. These additional summary
+statistics can then be added via the \code{summary_stats} argument. This can be
+used to add custom summary statistics not available in \link[broom:reexports]{broom::glance} or
+if no existing method exists in \link{broom} for this type of model object. The
+returned object should be a \link{tibble} of the same type as returned from
+\link[broom:reexports]{broom::glance}. It should have only one row, and any desired summary
+statistics should be included as columns. In many cases, the output from
+\link[broom:reexports]{broom::glance} can be augmented in this function with additional
+information. See below for an example of this approach for pseudo-R-squared
+in a logit model.}
 }
 \value{
-\code{gt_model} returns a \code{gt_tbl} object that can be further processed using
-various commands from the \link{gt} package.
+\code{gt_model} returns a \code{gt_tbl} object that can be further processed
+using various commands from the \link{gt} package.
 }
 \description{
-\code{gt_model} outputs a list of models as a \link{gt} table for display in Quarto,
-R Markdown, or other formats.
+The \code{gt_model()} function outputs a list of models as a \link{gt} table for
+display in Quarto, R Markdown, or other formats. Further \strong{gt}
+transformations can be applied to the created table.
 }
 \details{
-This function can be used to create a \link{gt} table of model (i.e. regression) results
-using a format common in many scientific fields. Multiple models can be included in the table
-by feeding in a list of model objects. The most common intended use of this function is within
-a Quarto document where the output will be displayed nicely in the final output.
+This function can be used to create a \link{gt} table of model (i.e. regression)
+results using a format common in many scientific fields. Multiple models can
+be included in the table by feeding in a list of model objects. The most
+common intended use of this function is within a Quarto document where the
+output will be displayed nicely in the final output.
 
-Model output is extracted via the \href{https://broom.tidymodels.org/index.html}{broom}
-package. You can see a full list of models with methods available in \code{broom}
-\href{https://broom.tidymodels.org/articles/available-methods.html}{here}. Some complex model
-types that don't return other elements besides basic estimates, standard errors, etc. may
-not work correctly.
+Model output is extracted via the
+\href{https://broom.tidymodels.org/index.html}{broom} package. You can see a full
+list of models with methods available in \code{broom}
+\href{https://broom.tidymodels.org/articles/available-methods.html}{here}. Some
+complex model types that return other elements besides estimates,
+standard errors, and p.values may not work correctly.
 
-For model classes without corresponding \link{broom} methods, the user may use the
-\code{fn_estimate} and \code{fn_summary} arguments to supply custom functions that extract
-this information from the model object in a manner analogous to \link[broom:reexports]{broom::tidy} and
-\link[broom:reexports]{broom::glance}, respectively.
+For model classes without corresponding \link{broom} methods, the user may specify the
+\code{fn_estimate} and \code{fn_summary} arguments to supply custom functions that
+extract this information from the model object in a manner analogous to
+\link[broom:reexports]{broom::tidy} and \link[broom:reexports]{broom::glance}, respectively.
 
-Because the returned object is a \code{gt_tbl}, it can be further refined to the user's
-tastes by piping it into subsequent \link{gt} commands.
+Because the returned object is a \code{gt_tbl}, it can be further refined to the
+user's tastes by piping it into subsequent \link{gt} commands.
 
-The returned table uses a "stub" column for the variable and summary statistics labels. All
-model columns will be named as \code{modelX} where X is the index of the model (e.g. model1, model2).
-Users can rename the models with a \code{cols_label} command. Variables and summary statistics
-can be renamed by the \code{var_labels} argument which takes a named character vector that
-provides the correspondence between original and new variable names (see examples below).
+It may be useful to consider the table anatomy and underlying row and column
+labels that underly the outputted model. The general anatomy is:\tabular{lrrr}{
+   <stubhead_label> \tab model1 \tab model2 \tab model3 \cr
+   coef:var_name1 \tab ... \tab ... \tab ... \cr
+   par:var_name1 \tab (...) \tab (...) \tab (...) \cr
+   coef:var_name2 \tab ... \tab ... \tab ... \cr
+   par:var_name2 \tab (...) \tab (...) \tab (...) \cr
+   grp:var_name3 \tab  \tab  \tab  \cr
+   coef:var_name3Yes \tab ... \tab ... \tab ... \cr
+   par:var_name3No \tab (...) \tab (...) \tab (...) \cr
+   coef:var_name3Yes \tab ... \tab ... \tab ... \cr
+   par:var_name3No \tab (...) \tab (...) \tab (...) \cr
+}
 
-All rows have a label prefix that can be used to identify sets of rows or particular rows.
-Each row label begins with either "coef:", "par:", "summary:", or "grp:" depending on whether it is
-a model coefficient, parenthetical value, summary statistic, or variable group row, respectively. This is followed by either the
-name of the variable in R or the name of the summary statistic. These labels will still apply
-even if the \code{var_labels} argument has been used for different labeling in the printed table.
-User can use this to access specific rows or types of rows. For example, to change the
-rounding on all coefficient values:
+
+The returned table uses a "stub" column for the variable and summary
+statistics labels. All model columns will be named as \code{modelX} where X is the
+index of the model (e.g. model1, model2). Users can rename the models with a
+\code{cols_label} command.
+
+All rows have a label prefix that can be used to identify sets of rows or
+particular rows. Each row label begins with either \verb{coef:}, \verb{par:},
+\verb{summary:}, or \verb{grp:} depending on whether it is a model coefficient,
+parenthetical value, summary statistic, or variable group row, respectively.
+This is followed by either the name of the variable in R or the name of the
+summary statistic. By default, the function hides the stub labels for the
+\verb{par:} rows. Other stub labels can be renamed by the \code{var_labels} argument
+which takes a named character vector that provides the correspondence between
+original and new variable names (see examples below).
+
+Even if variables/summary statistics, have been renamed the stub labels can
+still be used to identify particular rows or groups of rows. For example, to
+change the rounding on all coefficient values:
 
 \if{html}{\out{<div class="sourceCode r">}}\preformatted{ gt_model(...) |>
    fmt_number(rows=matches("^coef:"), decimals=5)
+}\if{html}{\out{</div>}}
+
+If the \code{beside=TRUE} argument is used, the table will have a somewhat different
+format:\tabular{lrrrrrr}{
+   <stubhead_label> \tab model1_coef \tab model1_par \tab model2_coef \tab model2_par \tab model3_coef \tab model3_par \cr
+   coef:var_name1 \tab ... \tab (...) \tab ... \tab (...) \tab ... \tab (...) \cr
+   coef:var_name2 \tab ... \tab (...) \tab ... \tab (...) \tab ... \tab (...) \cr
+   grp:var_name3 \tab  \tab  \tab  \tab  \tab  \tab  \cr
+   coef:var_name3Yes \tab ... \tab (...) \tab ... \tab (...) \tab ... \tab (...) \cr
+   coef:var_name3Yes \tab ... \tab (...) \tab ... \tab (...) \tab ... \tab (...) \cr
+}
+
+
+Parenthetical values are applied in different columns rather than rows in
+this format, which makes wider but shorter tables if that is desirable. It is
+recommended to use the columns ending in "_par" to label models and make the
+"_coef" columns unlabeled for final display. For example, in a table with 3
+models as above:
+
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{gt_model(...) |>
+  cols_label(model1_coef = "", model2_coef = "", model3_coef = "",
+             model1_par = "(1)", model2_par = "(2)", model3_par = "(3)")
 }\if{html}{\out{</div>}}
 }
 \examples{
