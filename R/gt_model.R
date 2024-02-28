@@ -166,199 +166,51 @@ gt_model <- function(models,
                      fn_estimate = NULL,
                      fn_summary = NULL) {
 
-  #### Create Table #####
-
   if(!(parenthetical_value %in% c("std.error", "statistic", "p.value"))) {
     parenthetical_value <- "std.error"
     warning("Parenthetical value not recognized. Defaulting to std.error.")
   }
 
-  tbl_coef <- models |>
-    purrr::map(ifelse(is.null(fn_estimate), broom::tidy, fn_estimate)) |>
-    dplyr::bind_rows(.id="model") |>
-    dplyr::select(model, term, estimate, !!parenthetical_value) |>
-    dplyr::rename(variable = term,
-                  coef = estimate,
-                  par = !!parenthetical_value)  |>
-    dplyr::mutate(model = stringr::str_c("model", model))
+  # Build tibble from models ------------------------------------------------
 
-  if(exponentiate) {
-    tbl_coef <- tbl_coef |>
-      dplyr::mutate(coef = exp(coef))
-  }
+  tbl <- build_tbl(models = models,
+                   summary_stats = summary_stats,
+                   parenthetical_value = parenthetical_value,
+                   beside = beside,
+                   exponentiate = exponentiate,
+                   fn_estimate = fn_estimate,
+                   fn_summary = fn_summary)
 
-  # reshape the table
-  tbl_coef <- tbl_coef |>
-    tidyr::pivot_longer(cols = c(coef, par),
-                        names_to = "type",
-                        values_to = "value") |>
-    tidyr::pivot_wider(id_cols = c(variable, type),
-                       names_from = model,
-                       values_from = value)
+  # omit variables
+  tbl <- tbl |>
+    omit_variables(omit_var)
 
-  # if beside, then reshape again
-  if(beside) {
-    tbl_coef <- tbl_coef |>
-      tidyr::pivot_wider(id_cols=variable,
-                         names_from=type,
-                         values_from=tidyselect::starts_with("model")) |>
-      dplyr::mutate(variable = stringr::str_c("coef", variable, sep=":"))
-  } else {
-    # if not beside we can get rid of type
-    tbl_coef <- tbl_coef |>
-      dplyr::mutate(variable = stringr::str_c(type, variable, sep=":")) |>
-      dplyr::select(!type)
-  }
+  # add groups
+  tbl <- tbl |>
+    add_groups(groups)
 
-  # now get summary statistics
-  if(!("nobs" %in% summary_stats)) {
-    # always include the number of observations
-    summary_stats <- c("nobs", summary_stats)
-  }
+  # Construct the gt table --------------------------------------------------
 
-  tbl_summary <- models |>
-    purrr::map(ifelse(is.null(fn_summary), broom::glance, fn_summary)) |>
-    dplyr::bind_rows(.id="model")  |>
-    dplyr::mutate(model = stringr::str_c("model", model)) |>
-    dplyr::select(c(model, tidyselect::all_of(summary_stats))) |>
-    tidyr::pivot_longer(cols = summary_stats, names_to = "variable") |>
-    tidyr::pivot_wider(names_from = model, values_from = value) |>
-    dplyr::mutate(variable = stringr::str_c("summary", variable, sep=":"))
+  tbl_gt_model <- construct_tbl_gt(tbl = tbl,
+                                   digits = digits,
+                                   parenthesis_type = parenthesis_type,
+                                   beside = beside)
 
-  if(beside) {
-    # need to rename columns in this case to match
-    tbl_summary <- tbl_summary |>
-      dplyr::rename_with(~ paste0(.x, "_par"),
-                         tidyselect::starts_with("model"))
-  }
-
-  # now combine them together
-  tbl <- dplyr::bind_rows(tbl_coef, tbl_summary)
-
-  # drop any omitted variables
-  for(x in omit_var) {
-    x <- paste("^(coef|par):", x, sep="")
-    tbl <- tbl |>
-      dplyr::filter(!stringr::str_detect(variable, x))
-  }
-
-  #### Add groups ####
-
-  # start a list of row labels to indent
-  indent_list <- NULL
-  for(group in groups) {
-    # get all members of this group by index
-    indx_grp <- which(stringr::str_detect(tbl$variable,
-                                          stringr::fixed(paste("coef",
-                                                               group,
-                                                               sep=":"))))
-    # get first index where this group occurs
-    indx_first <- indx_grp[1]
-    if(is.na(indx_first)) {
-      next
-    }
-
-    # collect row labels for later indentation
-    indent_list <- c(indent_list, tbl$variable[indx_grp])
-
-    # insert group row
-    tbl <- tbl |>
-      tibble::add_row(variable=paste("grp", group, sep=":"),
-                      .before=indx_first)
-  }
-
-  #### Construct gt Table ####
-
-  tbl_gt_model <- tbl |>
-    gt(rowname_col = "variable") |>
-    fmt_number(decimals = digits) |>
-    fmt_number(decimals = 0, rows = "summary:nobs") |>
-    sub_missing(missing_text = "") |>
-    opt_footnote_marks(marks = c("*", "**", "***")) |>
-    tab_options(footnotes.multiline = FALSE, footnotes.sep = ";")
-
-  # wrap parenthetical values in parenthesis
-  parenthesis_pattern = "({x})"
-  if(parenthesis_type == "square") {
-    parenthesis_pattern <- "[{x}]"
-  } else if(parenthesis_type == "curly") {
-    parenthesis_pattern <- "{{x}}"
-  } else if(parenthesis_type != "regular") {
-    message("Parenthesis type not recognized. Defaulting to regular.")
-  }
-  if(beside) {
-    tbl_gt_model <- tbl_gt_model |>
-      fmt_number(columns = tidyselect::ends_with("_par"),
-                 rows = tidyselect::starts_with("coef:"),
-                 pattern = parenthesis_pattern,
-                 decimals = digits)
-  } else {
-    tbl_gt_model <- tbl_gt_model |>
-      fmt_number(rows = tidyselect::starts_with("par:"),
-                 pattern = parenthesis_pattern,
-                 decimals = digits)
-  }
-
-  # remove "par:" stub labels
+  # change variable labels
   tbl_gt_model <- tbl_gt_model |>
-    text_replace(".*", "", locations = cells_stub(rows = matches("^par:")))
+    replace_var_labels(var_labels)
 
-  # replace variable labels
-  if(!is.null(var_labels)) {
-    tbl_gt_model <- tbl_gt_model |>
-      text_transform(
-        fn = function(x) {
-          replacement <- var_labels[stringr::str_remove(x, "^(coef|grp|summary):")]
-          replacement[which(is.na(replacement))] <- x[which(is.na(replacement))]
-          return(replacement)
-        },
-        locations = cells_stub(rows = matches("^(coef|grp|summary):"))
-      )
-  }
+  # indent group variables
+  tbl_gt_model <- tbl_gt_model |>
+    apply_group_indents(groups)
 
-  # apply indents
-  if(length(indent_list) > 0) {
-    tbl_gt_model <- tbl_gt_model |>
-      tab_stub_indent(rows=indent_list, indent=3)
-  }
-
-  #### Add Asterisks ####
-
+  # add asterisks
   if (!is.null(sig_thresh)) {
-
-    # create pvalue matrix
-    tbl_p <- models |>
-      purrr::map(broom::tidy) |>
-      dplyr::bind_rows(.id="model") |>
-      dplyr::select(model, term, p.value) |>
-      dplyr::rename(variable=term,
-                    pvalue=p.value)  |>
-      dplyr::mutate(model = stringr::str_c("model", model)) |>
-      tidyr::pivot_wider(id_cols = variable,
-                         names_from = model,
-                         values_from = pvalue) |>
-      dplyr::mutate(variable = stringr::str_c("coef", variable, sep=":"))
-
-    sig_label <- paste("p < ", sig_thresh, sep = "")
-
-    # loop through models and assign an asterisks
-    for (i in 2:ncol(tbl_p)) {
-      sig_rows <- tbl_p$variable[which(tbl_p[,i] < sig_thresh)]
-      # check to make sure they have not been omitted
-      for(x in omit_var) {
-        x <- paste("^coef:", x, sep="")
-        sig_rows <- sig_rows[!stringr::str_detect(sig_rows, x)]
-      }
-      col_idx <- i
-      if(beside) {
-        col_idx <- 2 * i - 1
-      }
-      tbl_gt_model <- tbl_gt_model |>
-        tab_footnote(footnote = sig_label,
-                     locations = cells_body(columns = col_idx,
-                                            rows = sig_rows),
-                     placement = "right")
-    }
+    tbl_gt_model <- tbl_gt_model |>
+      apply_asterisks(models = models,
+                      sig_thresh = sig_thresh,
+                      beside = beside,
+                      omit_var = omit_var)
   }
 
   return(tbl_gt_model)
