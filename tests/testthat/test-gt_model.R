@@ -107,3 +107,12 @@ test_that("Validation of digits argument is working", {
   expect_error(gt_model(models, digits = -2))
   expect_error(gt_model(models, digits = "a"))
 })
+
+test_that("Validation of sig_thresh argument is working", {
+  expect_error(gt_model(models, sig_thresh = c(2, 3)))
+  expect_error(gt_model(models, sig_thresh = NA))
+  expect_error(gt_model(models, sig_thresh = -2))
+  expect_error(gt_model(models, sig_thresh = "a"))
+  tbl <- gt_model(models, sig_thresh = NULL)
+  tbl |> as_latex() |> expect_snapshot()
+})
