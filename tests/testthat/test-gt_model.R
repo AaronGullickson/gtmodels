@@ -126,4 +126,11 @@ test_that("Validation of sig_thresh argument is working", {
   tbl |> as_latex() |> expect_snapshot()
 })
 
+test_that("Validation of summary_stats argument is working", {
+  expect_error(gt_model(models, summary_stats = NA),
+               "The values for `summary_stats` must not be `NA`.")
+  expect_error(gt_model(models, summary_stats = c(1, 2)),
+               "Any input for `summary_stats` must be character.")
+})
+
 

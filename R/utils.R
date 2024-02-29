@@ -256,6 +256,7 @@ validate_args <-function(models,
 
   validate_digits(digits)
   validate_sig_thresh(sig_thresh)
+  validate_summary_stats(summary_stats)
 
 }
 
@@ -295,6 +296,20 @@ validate_sig_thresh <- function(sig_thresh) {
   }
   if (sig_thresh <= 0) {
     cli::cli_abort("The value for `sig_thresh` must be greater than zero.")
+  }
+}
+
+validate_summary_stats <- function(summary_stats) {
+
+  if (is.null(summary_stats)) {
+    return()
+  }
+
+  if (sum(is.na(summary_stats)) > 0) {
+    cli::cli_abort("The values for `summary_stats` must not be `NA`.")
+  }
+  if (!is.character(summary_stats)) {
+    cli::cli_abort("Any input for `summary_stats` must be character.")
   }
 }
 
