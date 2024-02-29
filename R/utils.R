@@ -63,7 +63,8 @@ build_tbl <- function(models,
     dplyr::bind_rows(.id="model")  |>
     dplyr::mutate(model = stringr::str_c("model", model)) |>
     dplyr::select(c(model, tidyselect::all_of(summary_stats))) |>
-    tidyr::pivot_longer(cols = summary_stats, names_to = "variable") |>
+    tidyr::pivot_longer(cols = tidyselect::all_of(summary_stats),
+                        names_to = "variable") |>
     tidyr::pivot_wider(names_from = model, values_from = value) |>
     dplyr::mutate(variable = stringr::str_c("summary", variable, sep=":"))
 
