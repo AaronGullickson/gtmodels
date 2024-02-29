@@ -358,3 +358,19 @@ validate_parenthesis_type <- function(parenthesis_type) {
 
   return(parenthesis_type)
 }
+
+validate_beside <- function(beside) {
+
+  if(is.null(beside)) {
+    cli::cli_abort("The value for `beside` must not be `NULL`.")
+  }
+  if(length(beside) != 1) {
+    cli::cli_abort("The length of `beside` must be 1.")
+  }
+  if(is.na(beside)) {
+    cli::cli_abort("The value for `beside` must not be `NA`.")
+  }
+  if(!is.logical(beside)) {
+    cli::cli_abort("Any input for `beside` must be logical.")
+  }
+}

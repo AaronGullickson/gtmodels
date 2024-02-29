@@ -168,6 +168,17 @@ test_that("Validation of parenthesis_type argument is working", {
                  "Parenthesis type not recognized. Defaulting to regular.")
 })
 
+test_that("Validation of beside argument is working", {
+  expect_error(gt_model(models, beside = c(TRUE, TRUE)),
+              "The length of `beside` must be 1.")
+  expect_error(gt_model(models, beside = NULL),
+               "The value for `beside` must not be `NULL`.")
+  expect_error(gt_model(models, beside = NA),
+               "The value for `beside` must not be `NA`.")
+  expect_error(gt_model(models, beside = 1),
+               "Any input for `beside` must be logical.")
+})
+
 
 
 
