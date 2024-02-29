@@ -101,18 +101,29 @@ test_that("A custom summary function can be used", {
 })
 
 test_that("Validation of digits argument is working", {
-  expect_error(gt_model(models, digits = c(2, 3)))
-  expect_error(gt_model(models, digits = NA))
-  expect_error(gt_model(models, digits = NULL))
-  expect_error(gt_model(models, digits = -2))
-  expect_error(gt_model(models, digits = "a"))
+  expect_error(gt_model(models, digits = c(2, 3)),
+               "The length of `digits` must be 1.")
+  expect_error(gt_model(models, digits = NA),
+               "The value for `digits` must not be `NA`.")
+  expect_error(gt_model(models, digits = NULL),
+               "The value for `digits` must not be `NULL`.")
+  expect_error(gt_model(models, digits = -2),
+               "The value for `digits` must be positive or zero.")
+  expect_error(gt_model(models, digits = "a"),
+               "Any input for `digits` must be numeric.")
 })
 
 test_that("Validation of sig_thresh argument is working", {
-  expect_error(gt_model(models, sig_thresh = c(2, 3)))
-  expect_error(gt_model(models, sig_thresh = NA))
-  expect_error(gt_model(models, sig_thresh = -2))
-  expect_error(gt_model(models, sig_thresh = "a"))
+  expect_error(gt_model(models, sig_thresh = c(2, 3)),
+               "The length of `sig_thresh` must be 1.")
+  expect_error(gt_model(models, sig_thresh = NA),
+               "The value for `sig_thresh` must not be `NA`.")
+  expect_error(gt_model(models, sig_thresh = -2),
+               "The value for `sig_thresh` must be greater than zero.")
+  expect_error(gt_model(models, sig_thresh = "a"),
+               "Any input for `sig_thresh` must be numeric.")
   tbl <- gt_model(models, sig_thresh = NULL)
   tbl |> as_latex() |> expect_snapshot()
 })
+
+

@@ -261,14 +261,14 @@ validate_args <-function(models,
 
 validate_digits <- function(digits) {
 
+  if (is.null(digits)) {
+    cli::cli_abort("The value for `digits` must not be `NULL`.")
+  }
   if (length(digits) != 1) {
     cli::cli_abort("The length of `digits` must be 1.")
   }
   if (is.na(digits)) {
     cli::cli_abort("The value for `digits` must not be `NA`.")
-  }
-  if (is.null(digits)) {
-    cli::cli_abort("The value for `digits` must not be `NULL`.")
   }
   if (!is.numeric(digits)) {
     cli::cli_abort("Any input for `digits` must be numeric.")
@@ -290,7 +290,6 @@ validate_sig_thresh <- function(sig_thresh) {
   if (is.na(sig_thresh)) {
     cli::cli_abort("The value for `sig_thresh` must not be `NA`.")
   }
-
   if (!is.numeric(sig_thresh)) {
     cli::cli_abort("Any input for `sig_thresh` must be numeric.")
   }
@@ -298,6 +297,5 @@ validate_sig_thresh <- function(sig_thresh) {
     cli::cli_abort("The value for `sig_thresh` must be greater than zero.")
   }
 }
-
 
 
