@@ -133,4 +133,28 @@ test_that("Validation of summary_stats argument is working", {
                "Any input for `summary_stats` must be character.")
 })
 
+test_that("Validation of var_labels argument is working", {
+  expect_error(gt_model(models, var_labels = NA),
+               "The values for `var_labels` must not be `NA`.")
+  expect_error(gt_model(models, var_labels = c(1, 2)),
+               "Any input for `var_labels` must be character.")
+  expect_error(gt_model(models, var_labels = c("a", "b")),
+               "The `var_labels` vector must be named.")
+})
+
+test_that("Validation of parenthetical_value argument is working", {
+  expect_error(gt_model(models, parenthetical_value = c("a", "b")),
+               "The length of `parenthetical_value` must be 1.")
+  expect_error(gt_model(models, parenthetical_value = NULL),
+               "The value for `parenthetical_value` must not be `NULL`.")
+  expect_error(gt_model(models, parenthetical_value = NA),
+               "The value for `parenthetical_value` must not be `NA`.")
+  expect_error(gt_model(models, parenthetical_value = 1),
+               "Any input for `parenthetical_value` must be character.")
+  expect_warning(gt_model(models, parenthetical_value = "bob"),
+                 "Parenthetical value not recognized. Defaulting to std.error.")
+})
+
+
+
 

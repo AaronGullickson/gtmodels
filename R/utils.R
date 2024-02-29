@@ -243,23 +243,6 @@ apply_asterisks <- function(tbl_gt_model,
 
 # Validation functions ----------------------------------------------------
 
-validate_args <-function(models,
-                         digits,
-                         sig_thresh,
-                         summary_stats,
-                         var_labels,
-                         parenthetical_value,
-                         parenthesis_type,
-                         beside,
-                         groups,
-                         omit_var) {
-
-  validate_digits(digits)
-  validate_sig_thresh(sig_thresh)
-  validate_summary_stats(summary_stats)
-
-}
-
 validate_digits <- function(digits) {
 
   if (is.null(digits)) {
@@ -313,4 +296,42 @@ validate_summary_stats <- function(summary_stats) {
   }
 }
 
+validate_var_labels <- function(var_labels) {
 
+  if(is.null(var_labels)) {
+    return()
+  }
+
+  if(sum(is.na(var_labels)) > 0) {
+    cli::cli_abort("The values for `var_labels` must not be `NA`.")
+  }
+  if(!is.character(var_labels)) {
+    cli::cli_abort("Any input for `var_labels` must be character.")
+  }
+  if(is.null(names(var_labels))) {
+    cli::cli_abort("The `var_labels` vector must be named.")
+  }
+}
+
+validate_parenthetical_value <- function(parenthetical_value) {
+
+  if(is.null(parenthetical_value)) {
+    cli::cli_abort("The value for `parenthetical_value` must not be `NULL`.")
+  }
+  if(length(parenthetical_value) != 1) {
+    cli::cli_abort("The length of `parenthetical_value` must be 1.")
+  }
+  if(is.na(parenthetical_value)) {
+    cli::cli_abort("The value for `parenthetical_value` must not be `NA`.")
+  }
+  if(!is.character(parenthetical_value)) {
+    cli::cli_abort("Any input for `parenthetical_value` must be character.")
+  }
+
+  if(!(parenthetical_value %in% c("std.error", "statistic", "p.value"))) {
+    warning("Parenthetical value not recognized. Defaulting to std.error.")
+    return("std.error")
+  }
+
+  return(parenthetical_value)
+}
