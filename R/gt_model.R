@@ -293,7 +293,7 @@ gt_model <- function(models,
                 var_labels = var_labels,
                 parenthetical_value = parenthetical_value,
                 parenthesis_type = parenthesis_type,
-                beside = beside
+                beside = beside,
                 groups = groups,
                 omit_var = omit_var)
 
