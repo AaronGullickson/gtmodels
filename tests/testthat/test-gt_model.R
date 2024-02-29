@@ -99,3 +99,11 @@ test_that("A custom summary function can be used", {
                   summary_stats = c("nobs", "BIC.null"))
   expect_equal(tbl$`_data`$variable[14], "summary:BIC.null")
 })
+
+test_that("Validation of digits argument is working", {
+  expect_error(gt_model(models, digits = c(2, 3)))
+  expect_error(gt_model(models, digits = NA))
+  expect_error(gt_model(models, digits = NULL))
+  expect_error(gt_model(models, digits = -2))
+  expect_error(gt_model(models, digits = "a"))
+})
