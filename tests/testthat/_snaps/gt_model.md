@@ -614,3 +614,80 @@
       attr(,"knit_cacheable")
       [1] NA
 
+# Validation of sig_thresh argument is working
+
+    Code
+      as_latex(tbl)
+    Output
+      [1] "\\begin{longtable}{l|rrr}\n\\toprule\n\\multicolumn{1}{l}{} & model1 & model2 & model3 \\\\ \n\\midrule\\addlinespace[2.5pt]\ncoef:(Intercept) & $30.099$ & $37.106$ & $36.002$ \\\\ \n & ($1.634$) & ($2.111$) & ($2.131$) \\\\ \ncoef:hp & $-0.068$ & $-0.031$ & $-0.024$ \\\\ \n & ($0.010$) & ($0.011$) & ($0.012$) \\\\ \ncoef:disp &  & $-0.001$ & $0.004$ \\\\ \n &  & ($0.010$) & ($0.013$) \\\\ \ncoef:wt &  & $-3.801$ & $-3.429$ \\\\ \n &  & ($1.066$) & ($1.055$) \\\\ \ncoef:as.factor(cyl)6 &  &  & $-3.466$ \\\\ \n &  &  & ($1.463$) \\\\ \ncoef:as.factor(cyl)8 &  &  & $-3.753$ \\\\ \n &  &  & ($2.814$) \\\\ \nN & $32$ & $32$ & $32$ \\\\ \n\\bottomrule\n\\end{longtable}\n"
+      attr(,"class")
+      [1] "knit_asis"
+      attr(,"knit_meta")
+      attr(,"knit_meta")[[1]]
+      $name
+      [1] "booktabs"
+      
+      $options
+      NULL
+      
+      $extra_lines
+      NULL
+      
+      attr(,"class")
+      [1] "latex_dependency"
+      
+      attr(,"knit_meta")[[2]]
+      $name
+      [1] "caption"
+      
+      $options
+      NULL
+      
+      $extra_lines
+      NULL
+      
+      attr(,"class")
+      [1] "latex_dependency"
+      
+      attr(,"knit_meta")[[3]]
+      $name
+      [1] "longtable"
+      
+      $options
+      NULL
+      
+      $extra_lines
+      NULL
+      
+      attr(,"class")
+      [1] "latex_dependency"
+      
+      attr(,"knit_meta")[[4]]
+      $name
+      [1] "colortbl"
+      
+      $options
+      NULL
+      
+      $extra_lines
+      NULL
+      
+      attr(,"class")
+      [1] "latex_dependency"
+      
+      attr(,"knit_meta")[[5]]
+      $name
+      [1] "array"
+      
+      $options
+      NULL
+      
+      $extra_lines
+      NULL
+      
+      attr(,"class")
+      [1] "latex_dependency"
+      
+      attr(,"knit_cacheable")
+      [1] NA
+

@@ -286,10 +286,18 @@ gt_model <- function(models,
                      fn_estimate = NULL,
                      fn_summary = NULL) {
 
-  if(!(parenthetical_value %in% c("std.error", "statistic", "p.value"))) {
-    parenthetical_value <- "std.error"
-    warning("Parenthetical value not recognized. Defaulting to std.error.")
-  }
+
+  # Check input -------------------------------------------------------------
+
+  validate_digits(digits)
+  validate_sig_thresh(sig_thresh)
+  validate_summary_stats(summary_stats)
+  validate_var_labels(var_labels)
+  parenthetical_value <- validate_parenthetical_value(parenthetical_value)
+  parenthesis_type <- validate_parenthesis_type(parenthesis_type)
+  validate_beside(beside)
+  validate_groups(groups)
+  validate_omit_var(omit_var)
 
   # Build tibble from models ------------------------------------------------
 

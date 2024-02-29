@@ -241,4 +241,164 @@ apply_asterisks <- function(tbl_gt_model,
   return(tbl_gt_model)
 }
 
+# Validation functions ----------------------------------------------------
 
+validate_digits <- function(digits) {
+
+  if (is.null(digits)) {
+    cli::cli_abort("The value for `digits` must not be `NULL`.")
+  }
+  if (length(digits) != 1) {
+    cli::cli_abort("The length of `digits` must be 1.")
+  }
+  if (is.na(digits)) {
+    cli::cli_abort("The value for `digits` must not be `NA`.")
+  }
+  if (!is.numeric(digits)) {
+    cli::cli_abort("Any input for `digits` must be numeric.")
+  }
+  if (digits < 0) {
+    cli::cli_abort("The value for `digits` must be positive or zero.")
+  }
+}
+
+validate_sig_thresh <- function(sig_thresh) {
+
+  if (is.null(sig_thresh)) {
+    return()
+  }
+
+  if (length(sig_thresh) != 1) {
+    cli::cli_abort("The length of `sig_thresh` must be 1.")
+  }
+  if (is.na(sig_thresh)) {
+    cli::cli_abort("The value for `sig_thresh` must not be `NA`.")
+  }
+  if (!is.numeric(sig_thresh)) {
+    cli::cli_abort("Any input for `sig_thresh` must be numeric.")
+  }
+  if (sig_thresh <= 0) {
+    cli::cli_abort("The value for `sig_thresh` must be greater than zero.")
+  }
+}
+
+validate_summary_stats <- function(summary_stats) {
+
+  if (is.null(summary_stats)) {
+    return()
+  }
+
+  if (sum(is.na(summary_stats)) > 0) {
+    cli::cli_abort("The values for `summary_stats` must not be `NA`.")
+  }
+  if (!is.character(summary_stats)) {
+    cli::cli_abort("Any input for `summary_stats` must be character.")
+  }
+}
+
+validate_var_labels <- function(var_labels) {
+
+  if(is.null(var_labels)) {
+    return()
+  }
+
+  if(sum(is.na(var_labels)) > 0) {
+    cli::cli_abort("The values for `var_labels` must not be `NA`.")
+  }
+  if(!is.character(var_labels)) {
+    cli::cli_abort("Any input for `var_labels` must be character.")
+  }
+  if(is.null(names(var_labels))) {
+    cli::cli_abort("The `var_labels` vector must be named.")
+  }
+}
+
+validate_parenthetical_value <- function(parenthetical_value) {
+
+  if(is.null(parenthetical_value)) {
+    cli::cli_abort("The value for `parenthetical_value` must not be `NULL`.")
+  }
+  if(length(parenthetical_value) != 1) {
+    cli::cli_abort("The length of `parenthetical_value` must be 1.")
+  }
+  if(is.na(parenthetical_value)) {
+    cli::cli_abort("The value for `parenthetical_value` must not be `NA`.")
+  }
+  if(!is.character(parenthetical_value)) {
+    cli::cli_abort("Any input for `parenthetical_value` must be character.")
+  }
+
+  if(!(parenthetical_value %in% c("std.error", "statistic", "p.value"))) {
+    warning("Parenthetical value not recognized. Defaulting to std.error.")
+    return("std.error")
+  }
+
+  return(parenthetical_value)
+}
+
+validate_parenthesis_type <- function(parenthesis_type) {
+
+  if(is.null(parenthesis_type)) {
+    cli::cli_abort("The value for `parenthesis_type` must not be `NULL`.")
+  }
+  if(length(parenthesis_type) != 1) {
+    cli::cli_abort("The length of `parenthesis_type` must be 1.")
+  }
+  if(is.na(parenthesis_type)) {
+    cli::cli_abort("The value for `parenthesis_type` must not be `NA`.")
+  }
+  if(!is.character(parenthesis_type)) {
+    cli::cli_abort("Any input for `parenthesis_type` must be character.")
+  }
+
+  if(!(parenthesis_type %in% c("regular", "curly", "square"))) {
+    warning("Parenthesis type not recognized. Defaulting to regular.")
+    return("regular")
+  }
+
+  return(parenthesis_type)
+}
+
+validate_beside <- function(beside) {
+
+  if(is.null(beside)) {
+    cli::cli_abort("The value for `beside` must not be `NULL`.")
+  }
+  if(length(beside) != 1) {
+    cli::cli_abort("The length of `beside` must be 1.")
+  }
+  if(is.na(beside)) {
+    cli::cli_abort("The value for `beside` must not be `NA`.")
+  }
+  if(!is.logical(beside)) {
+    cli::cli_abort("Any input for `beside` must be logical.")
+  }
+}
+
+validate_groups <- function(groups) {
+
+  if(is.null(groups)) {
+    return()
+  }
+
+  if(sum(is.na(groups)) > 0) {
+    cli::cli_abort("The values for `groups` must not be `NA`.")
+  }
+  if(!is.character(groups)) {
+    cli::cli_abort("Any input for `groups` must be character.")
+  }
+}
+
+validate_omit_var <- function(omit_var) {
+
+  if(is.null(omit_var)) {
+    return()
+  }
+
+  if(sum(is.na(omit_var)) > 0) {
+    cli::cli_abort("The values for `omit_var` must not be `NA`.")
+  }
+  if(!is.character(omit_var)) {
+    cli::cli_abort("Any input for `omit_var` must be character.")
+  }
+}

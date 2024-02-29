@@ -99,3 +99,98 @@ test_that("A custom summary function can be used", {
                   summary_stats = c("nobs", "BIC.null"))
   expect_equal(tbl$`_data`$variable[14], "summary:BIC.null")
 })
+
+test_that("Validation of digits argument is working", {
+  expect_error(gt_model(models, digits = c(2, 3)),
+               "The length of `digits` must be 1.")
+  expect_error(gt_model(models, digits = NA),
+               "The value for `digits` must not be `NA`.")
+  expect_error(gt_model(models, digits = NULL),
+               "The value for `digits` must not be `NULL`.")
+  expect_error(gt_model(models, digits = -2),
+               "The value for `digits` must be positive or zero.")
+  expect_error(gt_model(models, digits = "a"),
+               "Any input for `digits` must be numeric.")
+})
+
+test_that("Validation of sig_thresh argument is working", {
+  expect_error(gt_model(models, sig_thresh = c(2, 3)),
+               "The length of `sig_thresh` must be 1.")
+  expect_error(gt_model(models, sig_thresh = NA),
+               "The value for `sig_thresh` must not be `NA`.")
+  expect_error(gt_model(models, sig_thresh = -2),
+               "The value for `sig_thresh` must be greater than zero.")
+  expect_error(gt_model(models, sig_thresh = "a"),
+               "Any input for `sig_thresh` must be numeric.")
+  tbl <- gt_model(models, sig_thresh = NULL)
+  tbl |> as_latex() |> expect_snapshot()
+})
+
+test_that("Validation of summary_stats argument is working", {
+  expect_error(gt_model(models, summary_stats = NA),
+               "The values for `summary_stats` must not be `NA`.")
+  expect_error(gt_model(models, summary_stats = c(1, 2)),
+               "Any input for `summary_stats` must be character.")
+})
+
+test_that("Validation of var_labels argument is working", {
+  expect_error(gt_model(models, var_labels = NA),
+               "The values for `var_labels` must not be `NA`.")
+  expect_error(gt_model(models, var_labels = c(1, 2)),
+               "Any input for `var_labels` must be character.")
+  expect_error(gt_model(models, var_labels = c("a", "b")),
+               "The `var_labels` vector must be named.")
+})
+
+test_that("Validation of parenthetical_value argument is working", {
+  expect_error(gt_model(models, parenthetical_value = c("a", "b")),
+               "The length of `parenthetical_value` must be 1.")
+  expect_error(gt_model(models, parenthetical_value = NULL),
+               "The value for `parenthetical_value` must not be `NULL`.")
+  expect_error(gt_model(models, parenthetical_value = NA),
+               "The value for `parenthetical_value` must not be `NA`.")
+  expect_error(gt_model(models, parenthetical_value = 1),
+               "Any input for `parenthetical_value` must be character.")
+  expect_warning(gt_model(models, parenthetical_value = "bob"),
+                 "Parenthetical value not recognized. Defaulting to std.error.")
+})
+
+test_that("Validation of parenthesis_type argument is working", {
+  expect_error(gt_model(models, parenthesis_type = c("a", "b")),
+               "The length of `parenthesis_type` must be 1.")
+  expect_error(gt_model(models, parenthesis_type = NULL),
+               "The value for `parenthesis_type` must not be `NULL`.")
+  expect_error(gt_model(models, parenthesis_type = NA),
+               "The value for `parenthesis_type` must not be `NA`.")
+  expect_error(gt_model(models, parenthesis_type = 1),
+               "Any input for `parenthesis_type` must be character.")
+  expect_warning(gt_model(models, parenthesis_type = "bob"),
+                 "Parenthesis type not recognized. Defaulting to regular.")
+})
+
+test_that("Validation of beside argument is working", {
+  expect_error(gt_model(models, beside = c(TRUE, TRUE)),
+              "The length of `beside` must be 1.")
+  expect_error(gt_model(models, beside = NULL),
+               "The value for `beside` must not be `NULL`.")
+  expect_error(gt_model(models, beside = NA),
+               "The value for `beside` must not be `NA`.")
+  expect_error(gt_model(models, beside = 1),
+               "Any input for `beside` must be logical.")
+})
+
+test_that("Validation of groups argument is working", {
+  expect_error(gt_model(models, groups = NA),
+               "The values for `groups` must not be `NA`.")
+  expect_error(gt_model(models, groups = c(1, 2)),
+               "Any input for `groups` must be character.")
+})
+
+test_that("Validation of omit_var argument is working", {
+  expect_error(gt_model(models, omit_var = NA),
+               "The values for `omit_var` must not be `NA`.")
+  expect_error(gt_model(models, omit_var = c(1, 2)),
+               "Any input for `omit_var` must be character.")
+})
+
+
