@@ -241,4 +241,43 @@ apply_asterisks <- function(tbl_gt_model,
   return(tbl_gt_model)
 }
 
+# Validation functions ----------------------------------------------------
+
+validate_args <-function(models,
+                         digits,
+                         sig_thresh,
+                         summary_stats,
+                         var_labels,
+                         parenthetical_value,
+                         parenthesis_type,
+                         beside,
+                         groups,
+                         omit_var) {
+
+  validate(digits)
+
+}
+
+validate_digits <- function(digits) {
+
+  if (length(digits) != 1) {
+    cli::cli_abort("The length of `digits` must be 1.")
+  }
+  if (is.na(digits)) {
+    cli::cli_abort("The value for `digits` must not be `NA`.")
+  }
+  if (is.null(digits)) {
+    cli::cli_abort("The value for `digits` must not be `NULL`.")
+  }
+  if (!is.numeric(digits)) {
+    cli::cli_abort("Any input for `digits` must be numeric.")
+  }
+  if (digits < 0) {
+    cli::cli_abort("The value for `digits` must be positive or zero.")
+  }
+}
+
+
+
+
 
