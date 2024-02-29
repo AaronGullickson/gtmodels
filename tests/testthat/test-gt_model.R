@@ -179,6 +179,18 @@ test_that("Validation of beside argument is working", {
                "Any input for `beside` must be logical.")
 })
 
+test_that("Validation of groups argument is working", {
+  expect_error(gt_model(models, groups = NA),
+               "The values for `groups` must not be `NA`.")
+  expect_error(gt_model(models, groups = c(1, 2)),
+               "Any input for `groups` must be character.")
+})
 
+test_that("Validation of omit_var argument is working", {
+  expect_error(gt_model(models, omit_var = NA),
+               "The values for `omit_var` must not be `NA`.")
+  expect_error(gt_model(models, omit_var = c(1, 2)),
+               "Any input for `omit_var` must be character.")
+})
 
 

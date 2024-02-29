@@ -296,6 +296,8 @@ gt_model <- function(models,
   parenthetical_value <- validate_parenthetical_value(parenthetical_value)
   parenthesis_type <- validate_parenthesis_type(parenthesis_type)
   validate_beside(beside)
+  validate_groups(groups)
+  validate_omit_var(omit_var)
 
   # Build tibble from models ------------------------------------------------
 

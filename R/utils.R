@@ -374,3 +374,31 @@ validate_beside <- function(beside) {
     cli::cli_abort("Any input for `beside` must be logical.")
   }
 }
+
+validate_groups <- function(groups) {
+
+  if(is.null(groups)) {
+    return()
+  }
+
+  if(sum(is.na(groups)) > 0) {
+    cli::cli_abort("The values for `groups` must not be `NA`.")
+  }
+  if(!is.character(groups)) {
+    cli::cli_abort("Any input for `groups` must be character.")
+  }
+}
+
+validate_omit_var <- function(omit_var) {
+
+  if(is.null(omit_var)) {
+    return()
+  }
+
+  if(sum(is.na(omit_var)) > 0) {
+    cli::cli_abort("The values for `omit_var` must not be `NA`.")
+  }
+  if(!is.character(omit_var)) {
+    cli::cli_abort("Any input for `omit_var` must be character.")
+  }
+}
