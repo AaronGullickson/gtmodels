@@ -286,6 +286,17 @@ gt_model <- function(models,
                      fn_estimate = NULL,
                      fn_summary = NULL) {
 
+  validate_args(models = models,
+                digits = digits,
+                sig_thresh = sig_thresh,
+                summary_stats = summary_stats,
+                var_labels = var_labels,
+                parenthetical_value = parenthetical_value,
+                parenthesis_type = parenthesis_type,
+                beside = beside
+                groups = groups,
+                omit_var = omit_var)
+
   if(!(parenthetical_value %in% c("std.error", "statistic", "p.value"))) {
     parenthetical_value <- "std.error"
     warning("Parenthetical value not recognized. Defaulting to std.error.")
