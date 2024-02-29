@@ -335,3 +335,26 @@ validate_parenthetical_value <- function(parenthetical_value) {
 
   return(parenthetical_value)
 }
+
+validate_parenthesis_type <- function(parenthesis_type) {
+
+  if(is.null(parenthesis_type)) {
+    cli::cli_abort("The value for `parenthesis_type` must not be `NULL`.")
+  }
+  if(length(parenthesis_type) != 1) {
+    cli::cli_abort("The length of `parenthesis_type` must be 1.")
+  }
+  if(is.na(parenthesis_type)) {
+    cli::cli_abort("The value for `parenthesis_type` must not be `NA`.")
+  }
+  if(!is.character(parenthesis_type)) {
+    cli::cli_abort("Any input for `parenthesis_type` must be character.")
+  }
+
+  if(!(parenthesis_type %in% c("regular", "curly", "square"))) {
+    warning("Parenthesis type not recognized. Defaulting to regular.")
+    return("regular")
+  }
+
+  return(parenthesis_type)
+}

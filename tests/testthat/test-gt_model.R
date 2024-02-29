@@ -155,6 +155,19 @@ test_that("Validation of parenthetical_value argument is working", {
                  "Parenthetical value not recognized. Defaulting to std.error.")
 })
 
+test_that("Validation of parenthesis_type argument is working", {
+  expect_error(gt_model(models, parenthesis_type = c("a", "b")),
+               "The length of `parenthesis_type` must be 1.")
+  expect_error(gt_model(models, parenthesis_type = NULL),
+               "The value for `parenthesis_type` must not be `NULL`.")
+  expect_error(gt_model(models, parenthesis_type = NA),
+               "The value for `parenthesis_type` must not be `NA`.")
+  expect_error(gt_model(models, parenthesis_type = 1),
+               "Any input for `parenthesis_type` must be character.")
+  expect_warning(gt_model(models, parenthesis_type = "bob"),
+                 "Parenthesis type not recognized. Defaulting to regular.")
+})
+
 
 
 
