@@ -33,7 +33,9 @@ gt_model(list(model1, model2, model3),
   cols_label(model1 = "(1)", model2 = "(2)", model3 = "(3)") |>
   fmt_number(rows = c("summary:BIC"), decimals = 1) |>
   tab_source_note(md("*Notes:* Standard errors shown in parenthesis.")) |>
-  tab_options(table.width = "100%")
+  tab_options(table.width = "100%") |>
+  tab_style(style = cell_text(align = "center"),
+            locations = cells_column_labels())
 
 # test beside
 gt_model(list(model1, model2, model3),

@@ -1,0 +1,161 @@
+---
+title: "Build a Basic Linear Model Table, Step-by-Step"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Build a Basic Linear Model Table, Step-by-Step}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+
+library(gt)
+library(gtmodels)
+```
+
+To get started, lets build a sequence of nested models from the `mtcars` dataset.
+
+```{r build-models}
+model1 <- lm(mpg ~ hp, data = mtcars)
+model2 <- update(model1, . ~ . + disp + wt)
+model3 <- update(model2, . ~ . + as.factor(cyl))
+```
+
+To display a table showing these model results using `gtmodels`, at a bare mimimum, we just need to feed a `list` of the models into the `gt_model` function. 
+
+```{r}
+gt_model(list(model1, model2, model3))
+```
+
+We now have a table in a recognizable format. Models are shown along the columns and variables along the rows. Standard errors are shown in parenthesis. However, it needs some work to be publication ready.
+
+## Add Summary Statistics
+
+The only summary statistic that will be shown by default is the sample size of the model. To include additional summary statistics, we first need to know what summary statistics are available in `broom::glance()` and what the names of those summary functions are. We can check that by running `broom::glance()` on the first model:
+
+```{r}
+broom::glance(model1)
+```
+
+We have a few options here. Lets try including the R-squared and BIC values. To do that, we need to include the names as they appear in the `broom::glance()` output as a character vector to the argument `summary_stats`.
+
+```{r}
+gt_model(list(model1, model2, model3),
+         summary_stats = c("r.squared", "BIC"))
+```
+
+We now have the two additional summary statistics at the bottom of our table, but they could use some additional formatting. Obviously, "summary:r.squared" and "summary:BIC" are not good labels, but we will correct this labeling problem below at the same time we correct it for the variables. The other issue is that the BIC statistic does not really need to be extended out to three decimal places. One decimal place should be sufficient. To fix this problem, we can use the `fmt_number()` function in `gt` while targeting that row.
+
+```{r}
+gt_model(list(model1, model2, model3),
+         summary_stats = c("r.squared", "BIC")) |>
+  fmt_number(rows = "summary:BIC", decimals = 1)
+```
+
+This is our first example of using a `gt` function to further customize the table. Because, the output of `gt_model` is a `gt_tbl`, we can apply this customization by simply piping the output of `gt_model` into additional `gt` functions.
+
+Notice that we were able to use the row label of `summary:BIC` to target a specific row for my formatting command. Every row has a label like this, and these labels will still work even after we have replaced the visual labels below. The labels for the parenthetical value rows have been hidden by default, but those labels are still available as "par:" followed by a variable name identical to the "coef:" row directly above. So, for example, if we want to target the parenthetical value row for the `wt` variable, we would use `par:wt` as the row label.
+
+## Changing Variable Labels
+
+```{r}
+name_corr <- c("(Intercept)" = "Constant",
+               "hp" = "Horsepower",
+               "disp" = "Displacement (cu. in.)",
+               "wt" = "Weight (1000 lbs)",
+               "as.factor(cyl)" = "Number of cylinders (ref. 4-cylinder)",
+               "as.factor(cyl)6" = "6-cylinder",
+               "as.factor(cyl)8" = "8-cylinder",
+               "nobs" = "N",
+               "r.squared" = "R-squared",
+               "BIC" = "BIC")
+
+gt_model(list(model1, model2, model3),
+         summary_stats = c("r.squared", "BIC"),
+         var_labels = name_corr) |>
+  fmt_number(rows = "summary:BIC", decimals = 1)
+```
+
+## Changing Column Labels
+
+```{r}
+gt_model(list(model1, model2, model3),
+         summary_stats = c("r.squared", "BIC"),
+         var_labels = name_corr) |>
+  fmt_number(rows = "summary:BIC", decimals = 1) |>
+  cols_label(model1 = "(1)", model2 = "(2)", model3 = "(3)")
+```
+
+```{r}
+gt_model(list(model1, model2, model3),
+         summary_stats = c("r.squared", "BIC"),
+         var_labels = name_corr) |>
+  fmt_number(rows = "summary:BIC", decimals = 1) |>
+  cols_label(model1 = "(1)", model2 = "(2)", model3 = "(3)") |>
+  tab_style(style = cell_text(align = "center"),
+            locations = cells_column_labels())
+```
+
+## Adding Table Notes
+
+```{r}
+gt_model(list(model1, model2, model3),
+         summary_stats = c("r.squared", "BIC"),
+         var_labels = name_corr) |>
+  fmt_number(rows = "summary:BIC", decimals = 1) |>
+  cols_label(model1 = "(1)", model2 = "(2)", model3 = "(3)") |>
+  tab_source_note(md("*Notes:* Standard errors shown in parenthesis")) |>
+  tab_style(style = cell_text(align = "center"),
+            locations = cells_column_labels())
+```
+
+## Grouping Variables
+
+```{r}
+gt_model(list(model1, model2, model3),
+         summary_stats = c("r.squared", "BIC"),
+         var_labels = name_corr,
+         groups = "as.factor(cyl)") |>
+  fmt_number(rows = "summary:BIC", decimals = 1) |>
+  cols_label(model1 = "(1)", model2 = "(2)", model3 = "(3)") |>
+  tab_source_note(md("*Notes:* Standard errors shown in parenthesis")) |>
+  tab_style(style = cell_text(align = "center"),
+            locations = cells_column_labels())
+```
+
+## Adding a Caption
+
+```{r}
+gt_model(list(model1, model2, model3),
+         summary_stats = c("r.squared", "BIC"),
+         var_labels = name_corr,
+         groups = "as.factor(cyl)") |>
+  fmt_number(rows = "summary:BIC", decimals = 1) |>
+  cols_label(model1 = "(1)", model2 = "(2)", model3 = "(3)") |>
+  tab_source_note(md("*Notes:* Standard errors shown in parenthesis")) |>
+  tab_header(title = "Models predicting mpg from mtcars dataset") |>
+  tab_style(style = cell_text(align = "center"),
+            locations = cells_column_labels())
+```
+
+
+````
+```{{r}}
+#| label: tbl-example
+#| tbl-cap: Models predicting mpg from mtcars dataset
+#| tbl-pos: "!t"
+gt_model(list(model1, model2, model3),
+         summary_stats = c("r.squared", "BIC"),
+         var_labels = name_corr,
+         groups = "as.factor(cyl)") |>
+  fmt_number(rows = "summary:BIC", decimals = 1) |>
+  cols_label(model1 = "(1)", model2 = "(2)", model3 = "(3)") |>
+  tab_source_note(md("*Notes:* Standard errors shown in parenthesis")) |>
+  tab_style(style = cell_text(align = "center"),
+            locations = cells_column_labels())
+```
+````
